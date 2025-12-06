@@ -1,0 +1,596 @@
+using Microsoft.AspNetCore.Mvc;
+using Stripe;
+using Stripe.Terminal;
+using LemonadeApp.Application.Services;
+using LemonadeApp.Application.DTOs;
+
+namespace LemonadeApp.Dashboard.Server.Controllers;
+
+[ApiController]
+[Route("api")]
+public class TerminalController : ControllerBase
+{
+    private readonly ICustomerService _customerService;
+    private readonly ITransactionService _transactionService;
+    private readonly IPaymentService _paymentService;
+    private readonly ILogger<TerminalController> _logger;
+    private readonly IConfiguration _configuration;
+
+    public TerminalController(
+        ICustomerService customerService,
+        ITransactionService transactionService,
+        IPaymentService paymentService,
+        ILogger<TerminalController> logger,
+        IConfiguration configuration)
+    {
+        _customerService = customerService;
+        _transactionService = transactionService;
+        _paymentService = paymentService;
+        _logger = logger;
+        _configuration = configuration;
+    }
+
+    /// <summary>
+    /// Generate a connection token for Stripe Terminal SDK
+    /// </summary>
+    [HttpPost("connection_token")]
+    public async Task<IActionResult> CreateConnectionToken()
+    {
+        try
+        {
+            var options = new ConnectionTokenCreateOptions();
+            var service = new ConnectionTokenService();
+            var connectionToken = await service.CreateAsync(options);
+
+            _logger.LogInformation("Created connection token successfully");
+
+            return Ok(new { secret = connectionToken.Secret });
+        }
+        catch (StripeException ex)
+        {
+            _logger.LogError(ex, "Stripe error creating connection token");
+            return StatusCode(500, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating connection token");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Create a PaymentIntent for terminal payment and track in payments table
+    /// Requires terminal authentication via X-Terminal-API-Key header
+    /// </summary>
+    [HttpPost("create_payment_intent")]
+    public async Task<IActionResult> CreatePaymentIntent([FromForm] Dictionary<string, string> parameters)
+    {
+        try
+        {
+            // Get authenticated terminal info from HttpContext.Items (set by middleware)
+            var accountId = (Guid)HttpContext.Items["AccountId"]!;
+            var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
+            var terminalLabel = HttpContext.Items["TerminalLabel"]?.ToString() ?? "Unknown Terminal";
+
+            var amount = long.Parse(parameters["amount"]);
+            var currency = parameters.GetValueOrDefault("currency", "nzd");
+            var description = parameters.GetValueOrDefault("description", "Lemonade purchase");
+
+            _logger.LogInformation("Creating payment intent for terminal {TerminalId} ({TerminalLabel}), amount: {Amount} {Currency}",
+                terminalId, terminalLabel, amount, currency);
+
+            // Create Stripe payment intent
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = amount,
+                Currency = currency,
+                Description = description,
+                PaymentMethodTypes = new List<string> { "card_present" },
+                CaptureMethod = "manual" // Manual capture for loyalty redemption flow
+            };
+
+            var service = new PaymentIntentService();
+            var paymentIntent = await service.CreateAsync(options);
+
+            _logger.LogInformation("Created payment intent: {PaymentIntentId}", paymentIntent.Id);
+
+            // Create payment record in our database
+            var createPaymentRequest = new CreatePaymentRequest(
+                AccountId: accountId,
+                CustomerId: null, // Customer not yet known at creation time
+                StripePaymentIntentId: paymentIntent.Id,
+                TerminalId: terminalId.ToString(),
+                TerminalLabel: terminalLabel,
+                Amount: amount / 100m, // Convert cents to dollars
+                Currency: currency
+            );
+
+            var payment = await _paymentService.CreatePaymentAsync(createPaymentRequest);
+
+            _logger.LogInformation("Created payment record {PaymentId} for payment intent {PaymentIntentId}",
+                payment.Id, paymentIntent.Id);
+
+            return Ok(new
+            {
+                intent = paymentIntent.ClientSecret,
+                payment_intent_id = paymentIntent.Id,
+                payment_id = payment.Id
+            });
+        }
+        catch (StripeException ex)
+        {
+            _logger.LogError(ex, "Stripe error creating payment intent");
+            return StatusCode(500, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating payment intent");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Update an existing PaymentIntent
+    /// </summary>
+    [HttpPost("update_payment_intent")]
+    public async Task<IActionResult> UpdatePaymentIntent([FromForm] Dictionary<string, string> parameters)
+    {
+        try
+        {
+            var paymentIntentId = parameters["payment_intent_id"];
+            var amount = long.Parse(parameters["amount"]);
+
+            _logger.LogInformation("Updating payment intent {PaymentIntentId} with new amount: {Amount}", paymentIntentId, amount);
+
+            var options = new PaymentIntentUpdateOptions
+            {
+                Amount = amount
+            };
+
+            var service = new PaymentIntentService();
+            var paymentIntent = await service.UpdateAsync(paymentIntentId, options);
+
+            _logger.LogInformation("Updated payment intent: {PaymentIntentId}", paymentIntent.Id);
+
+            // Update our payment record
+            var payment = await _paymentService.GetPaymentByStripePaymentIntentIdAsync(paymentIntentId);
+            if (payment != null)
+            {
+                var updateRequest = new UpdatePaymentRequest(
+                    CustomerId: null,
+                    StripeChargeId: null,
+                    AmountCharged: amount / 100m,
+                    LoyaltyRedeemed: null,
+                    LoyaltyEarned: null,
+                    Status: null,
+                    PaymentMethodType: null,
+                    CompletedAt: null
+                );
+
+                await _paymentService.UpdatePaymentAsync(payment.Id, updateRequest, payment.AccountId);
+            }
+
+            return Ok(new
+            {
+                intent = paymentIntent.ClientSecret,
+                payment_intent_id = paymentIntent.Id
+            });
+        }
+        catch (StripeException ex)
+        {
+            _logger.LogError(ex, "Stripe error updating payment intent");
+            return StatusCode(500, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating payment intent");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Capture a PaymentIntent and optionally award loyalty points
+    /// Requires terminal authentication via X-Terminal-API-Key header
+    /// </summary>
+    [HttpPost("capture_payment_intent")]
+    public async Task<IActionResult> CapturePaymentIntent([FromForm] string payment_intent_id, [FromForm] string? customer_email = null)
+    {
+        try
+        {
+            // Get authenticated terminal info from HttpContext.Items (set by middleware)
+            var accountId = (Guid)HttpContext.Items["AccountId"]!;
+            var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
+
+            _logger.LogInformation("Capturing payment intent: {PaymentIntentId} for terminal {TerminalId}",
+                payment_intent_id, terminalId);
+
+            var service = new PaymentIntentService();
+            var paymentIntent = await service.CaptureAsync(payment_intent_id);
+
+            // Calculate loyalty points (1 point per dollar, rounded down)
+            var points = (int)(paymentIntent.Amount / 100);
+
+            _logger.LogInformation("Payment captured successfully. Amount: {Amount}, Points: {Points}", paymentIntent.Amount, points);
+
+            // Update payment record
+            var payment = await _paymentService.GetPaymentByStripePaymentIntentIdAsync(payment_intent_id);
+
+            Guid? customerId = null;
+            if (!string.IsNullOrEmpty(customer_email) && payment != null)
+            {
+                try
+                {
+                    var customer = await FindCustomerByEmailAsync(customer_email, accountId);
+
+                    if (customer != null)
+                    {
+                        customerId = customer.Id;
+
+                        // Update payment with customer info
+                        var updateRequest = new UpdatePaymentRequest(
+                            CustomerId: customer.Id,
+                            StripeChargeId: paymentIntent.LatestChargeId,
+                            AmountCharged: paymentIntent.Amount / 100m,
+                            LoyaltyRedeemed: 0,
+                            LoyaltyEarned: points,
+                            Status: "completed",
+                            PaymentMethodType: paymentIntent.PaymentMethodTypes?.FirstOrDefault(),
+                            CompletedAt: DateTime.UtcNow
+                        );
+
+                        await _paymentService.UpdatePaymentAsync(payment.Id, updateRequest, payment.AccountId);
+
+                        // Create transaction record linked to payment
+                        var transaction = new CreateTransactionRequest(
+                            CustomerId: customer.Id,
+                            Points: points,
+                            Amount: paymentIntent.Amount / 100m,
+                            Type: "earn",
+                            Description: $"Purchase ${paymentIntent.Amount / 100.0:F2}",
+                            PaymentId: payment.Id,
+                            StripePaymentIntentId: payment_intent_id
+                        );
+
+                        await _transactionService.CreateTransactionAsync(transaction, customer.AccountId);
+
+                        _logger.LogInformation("Awarded {Points} points to customer {CustomerId}", points, customer.Id);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Customer with email {Email} not found", customer_email);
+
+                        // Still update payment as completed, but without customer
+                        if (payment != null)
+                        {
+                            var updateRequest = new UpdatePaymentRequest(
+                                CustomerId: null,
+                                StripeChargeId: paymentIntent.LatestChargeId,
+                                AmountCharged: paymentIntent.Amount / 100m,
+                                LoyaltyRedeemed: 0,
+                                LoyaltyEarned: points,
+                                Status: "completed",
+                                PaymentMethodType: paymentIntent.PaymentMethodTypes?.FirstOrDefault(),
+                                CompletedAt: DateTime.UtcNow
+                            );
+
+                            await _paymentService.UpdatePaymentAsync(payment.Id, updateRequest, payment.AccountId);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error awarding loyalty points to customer {Email}", customer_email);
+                    // Don't fail the capture if points award fails
+                }
+            }
+            else if (payment != null)
+            {
+                // No customer email provided, just mark payment as completed
+                var updateRequest = new UpdatePaymentRequest(
+                    CustomerId: null,
+                    StripeChargeId: paymentIntent.LatestChargeId,
+                    AmountCharged: paymentIntent.Amount / 100m,
+                    LoyaltyRedeemed: 0,
+                    LoyaltyEarned: points,
+                    Status: "completed",
+                    PaymentMethodType: paymentIntent.PaymentMethodTypes?.FirstOrDefault(),
+                    CompletedAt: DateTime.UtcNow
+                );
+
+                await _paymentService.UpdatePaymentAsync(payment.Id, updateRequest, payment.AccountId);
+            }
+
+            return Ok(new
+            {
+                intent = paymentIntent.ClientSecret,
+                payment_intent_id = paymentIntent.Id,
+                loyalty_points = points,
+                customer_id = customerId,
+                payment_id = payment?.Id
+            });
+        }
+        catch (StripeException ex)
+        {
+            _logger.LogError(ex, "Stripe error capturing payment intent");
+            return StatusCode(500, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error capturing payment intent");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Look up customer credit/points by email
+    /// Requires terminal authentication via X-Terminal-API-Key header
+    /// </summary>
+    [HttpGet("lookup_customer_credit")]
+    public async Task<IActionResult> LookupCustomerCredit([FromQuery] string email)
+    {
+        try
+        {
+            // Get authenticated terminal info from HttpContext.Items (set by middleware)
+            var accountId = (Guid)HttpContext.Items["AccountId"]!;
+            var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest(new { error = "Email is required" });
+            }
+
+            _logger.LogInformation("Looking up customer credit for email: {Email} on terminal {TerminalId}",
+                email, terminalId);
+
+            var customer = await FindCustomerByEmailAsync(email, accountId);
+
+            if (customer == null)
+            {
+                _logger.LogWarning("Customer with email {Email} not found", email);
+                return NotFound(new { error = "Customer not found" });
+            }
+
+            _logger.LogInformation("Found customer {CustomerId} with {Points} points", customer.Id, customer.PointsBalance);
+
+            return Ok(new
+            {
+                customer_id = customer.Id.ToString(),
+                credit_balance = customer.PointsBalance * 100, // Convert points to cents (1 point = $0.01)
+                email = customer.Email,
+                name = customer.Name,
+                points_balance = customer.PointsBalance
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error looking up customer credit");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Apply loyalty redemption to payment
+    /// </summary>
+    [HttpPost("apply_redemption")]
+    public async Task<IActionResult> ApplyRedemption(
+        [FromForm] string payment_intent_id,
+        [FromForm] string customer_id,
+        [FromForm] long credit_to_redeem)
+    {
+        try
+        {
+            _logger.LogInformation("Applying redemption of {Credit} cents to payment intent {PaymentIntentId} for customer {CustomerId}",
+                credit_to_redeem, payment_intent_id, customer_id);
+
+            var service = new PaymentIntentService();
+            var paymentIntent = await service.GetAsync(payment_intent_id);
+
+            var newAmount = paymentIntent.Amount - credit_to_redeem;
+            if (newAmount < 0) newAmount = 0;
+
+            var options = new PaymentIntentUpdateOptions
+            {
+                Amount = newAmount
+            };
+
+            paymentIntent = await service.UpdateAsync(payment_intent_id, options);
+
+            // Update payment record with loyalty redemption
+            var payment = await _paymentService.GetPaymentByStripePaymentIntentIdAsync(payment_intent_id);
+            if (payment != null && Guid.TryParse(customer_id, out var customerGuid))
+            {
+                var updateRequest = new UpdatePaymentRequest(
+                    CustomerId: customerGuid,
+                    StripeChargeId: null,
+                    AmountCharged: newAmount / 100m,
+                    LoyaltyRedeemed: credit_to_redeem / 100m,
+                    LoyaltyEarned: null,
+                    Status: null,
+                    PaymentMethodType: null,
+                    CompletedAt: null
+                );
+
+                await _paymentService.UpdatePaymentAsync(payment.Id, updateRequest, payment.AccountId);
+            }
+
+            _logger.LogInformation("Applied redemption. New amount: {NewAmount}", newAmount);
+
+            return Ok(new
+            {
+                new_amount = newAmount,
+                credit_redeemed = credit_to_redeem
+            });
+        }
+        catch (StripeException ex)
+        {
+            _logger.LogError(ex, "Stripe error applying redemption");
+            return StatusCode(500, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error applying redemption");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Capture payment with loyalty redemption
+    /// Requires terminal authentication via X-Terminal-API-Key header
+    /// </summary>
+    [HttpPost("capture_with_redemption")]
+    public async Task<IActionResult> CaptureWithRedemption(
+        [FromForm] string payment_intent_id,
+        [FromForm] string customer_id,
+        [FromForm] long amount_to_capture,
+        [FromForm] long credit_redeemed)
+    {
+        try
+        {
+            // Get authenticated terminal info from HttpContext.Items (set by middleware)
+            var accountId = (Guid)HttpContext.Items["AccountId"]!;
+            var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
+
+            _logger.LogInformation("Capturing payment {PaymentIntentId} with redemption on terminal {TerminalId}. Amount: {Amount}, Credit: {Credit}",
+                payment_intent_id, terminalId, amount_to_capture, credit_redeemed);
+
+            // Capture the payment
+            var service = new PaymentIntentService();
+            var options = new PaymentIntentCaptureOptions
+            {
+                AmountToCapture = amount_to_capture
+            };
+            var paymentIntent = await service.CaptureAsync(payment_intent_id, options);
+
+            // Get payment record
+            var payment = await _paymentService.GetPaymentByStripePaymentIntentIdAsync(payment_intent_id);
+
+            // Deduct loyalty points from customer account and award points for amount paid
+            if (Guid.TryParse(customer_id, out var customerGuid))
+            {
+                var customer = await _customerService.GetCustomerByIdAsync(customerGuid, accountId);
+
+                if (customer != null && payment != null)
+                {
+                    // Create redemption transaction if points were redeemed
+                    if (credit_redeemed > 0)
+                    {
+                        var pointsToRedeem = (int)(credit_redeemed / 100); // Convert cents to points
+
+                        var redeemTransaction = new CreateTransactionRequest(
+                            CustomerId: customerGuid,
+                            Points: -pointsToRedeem,
+                            Amount: -(credit_redeemed / 100m),
+                            Type: "redeem",
+                            Description: $"Redeemed ${credit_redeemed / 100.0:F2} for purchase",
+                            PaymentId: payment.Id,
+                            StripePaymentIntentId: payment_intent_id
+                        );
+
+                        await _transactionService.CreateTransactionAsync(redeemTransaction, customer.AccountId);
+
+                        _logger.LogInformation("Deducted {Points} points from customer {CustomerId}", pointsToRedeem, customerGuid);
+                    }
+
+                    // Award points for the amount actually paid
+                    if (amount_to_capture > 0)
+                    {
+                        var pointsEarned = (int)(amount_to_capture / 100);
+
+                        var earnTransaction = new CreateTransactionRequest(
+                            CustomerId: customerGuid,
+                            Points: pointsEarned,
+                            Amount: amount_to_capture / 100m,
+                            Type: "earn",
+                            Description: $"Purchase ${amount_to_capture / 100.0:F2}",
+                            PaymentId: payment.Id,
+                            StripePaymentIntentId: payment_intent_id
+                        );
+
+                        await _transactionService.CreateTransactionAsync(earnTransaction, customer.AccountId);
+
+                        _logger.LogInformation("Awarded {Points} points to customer {CustomerId}", pointsEarned, customerGuid);
+                    }
+
+                    // Update payment record as completed
+                    var updateRequest = new UpdatePaymentRequest(
+                        CustomerId: customerGuid,
+                        StripeChargeId: paymentIntent.LatestChargeId,
+                        AmountCharged: amount_to_capture / 100m,
+                        LoyaltyRedeemed: credit_redeemed / 100m,
+                        LoyaltyEarned: (int)(amount_to_capture / 100),
+                        Status: "completed",
+                        PaymentMethodType: paymentIntent.PaymentMethodTypes?.FirstOrDefault(),
+                        CompletedAt: DateTime.UtcNow
+                    );
+
+                    await _paymentService.UpdatePaymentAsync(payment.Id, updateRequest, payment.AccountId);
+                }
+            }
+
+            return Ok(new { success = true, payment_id = payment?.Id });
+        }
+        catch (StripeException ex)
+        {
+            _logger.LogError(ex, "Stripe error capturing with redemption");
+            return StatusCode(500, new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error capturing with redemption");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Email receipt to customer
+    /// </summary>
+    [HttpPost("email_receipt")]
+    public IActionResult EmailReceipt(
+        [FromForm] string email,
+        [FromForm] string payment_intent_id,
+        [FromForm] long amount,
+        [FromForm] int loyalty_points)
+    {
+        try
+        {
+            // TODO: Implement email service integration
+            // For now, just log it
+            _logger.LogInformation("Receipt requested for {Email}: ${Amount}, {Points} points earned",
+                email, amount / 100.0, loyalty_points);
+
+            return Ok(new { success = true, message = "Receipt email queued (not implemented)" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error emailing receipt");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Helper method to find a customer by email within the authenticated terminal's account
+    /// </summary>
+    private async Task<CustomerDto?> FindCustomerByEmailAsync(string email, Guid accountId)
+    {
+        try
+        {
+            // First get the customer (which searches across all accounts)
+            var customer = await _customerService.FindCustomerByEmailAsync(email);
+
+            // Then verify it belongs to the authenticated terminal's account
+            if (customer != null && customer.AccountId != accountId)
+            {
+                _logger.LogWarning("Customer {Email} found but belongs to different account. Terminal account: {TerminalAccount}, Customer account: {CustomerAccount}",
+                    email, accountId, customer.AccountId);
+                return null;
+            }
+
+            return customer;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error finding customer by email: {Email}", email);
+            return null;
+        }
+    }
+}

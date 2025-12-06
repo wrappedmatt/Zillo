@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dotnet-passbook" Version="3.2.4" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.0" />
+    <PackageReference Include="supabase-csharp" Version="0.16.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Zillo.Domain\Zillo.Domain.csproj" />
+    <ProjectReference Include="..\Zillo.Application\Zillo.Application.csproj" />
+  </ItemGroup>
+
+</Project>

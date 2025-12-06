@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/success_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="120dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/payment_successful"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/points_earned_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/success_message"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/you_earned"
+            android:textSize="20sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/loyalty_points"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/points_earned_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="50 points"
+            android:textSize="48sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/points_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="48dp"
+            android:layout_marginRight="48dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/loyalty_points"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/loyalty_points_description"
+            android:textSize="16sp"
+            android:textColor="@color/text_secondary"
+            android:lineSpacingExtra="4sp"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/claim_points_button"
+            style="@style/button"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/dismiss_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/claim_points"
+            android:textSize="17sp"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/dismiss_button"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="24dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginRight="24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/dismiss"
+            android:textSize="17sp"
+            android:textColor="@color/selector_btn_secondary_text"
+            android:lineSpacingExtra="4sp"
+            android:gravity="center"
+            android:background="@drawable/selector_secondary_btn"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

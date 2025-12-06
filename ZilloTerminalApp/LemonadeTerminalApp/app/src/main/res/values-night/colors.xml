@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!--  AoD  -->
+    <!-- Background colors -->
+    <color name="background">#121212</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#C0C8D2</color>
+    <color name="text_digit_default">#FFFFFF</color>
+    <color name="text_digit_pressed">#FFFFFF</color>
+    <color name="text_default">#FFFFFF</color>
+    <color name="text_pressed">#F6F8FA</color>
+    <color name="text_disable">#80FFFFFF</color>
+    <color name="text_secondary_default">#F6F8FA</color>
+    <color name="text_secondary_pressed">#F6F8FA</color>
+    <color name="text_secondary_disable">#80F6F8FA</color>
+    <color name="text_amount">#F6F8FA</color>
+
+    <!-- Button colors -->
+    <color name="button_default">#0570DE</color>
+    <color name="button_pressed">#03438E</color>
+    <color name="button_disable">#03438E</color>
+    <color name="button_secondary_default">#1F1F1F</color>
+    <color name="button_secondary_pressed">#801F1F1F</color>
+    <color name="button_secondary_disable">#1F1F1F</color>
+    <color name="menu_button">#0570DE</color>
+
+    <color name="button_back">#E0E6EB</color>
+    <color name="button_right_arrow">#E0E6EB</color>
+
+    <!--keyboard button-->
+    <color name="button_keyboard_active">#635BFF</color>
+    <color name="button_keyboard_inactive">#121212</color>
+    <color name="button_clear">#ffffff</color>
+    <color name="text_keyboard">#ffffff</color>
+
+    <!-- TextEdit color -->
+    <color name="edit_background">#1F1F1F</color>
+    <color name="edit_text">#F6F8FA</color>
+    <color name="edit_border">#635BFF</color>
+
+    <!--divider line -->
+    <color name="divider_line">#36373A</color>
+
+    <!-- Lemonade branding -->
+    <color name="lemonade_yellow">#FDD835</color>
+</resources>

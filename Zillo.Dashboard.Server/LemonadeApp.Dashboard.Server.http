@@ -1,0 +1,6 @@
+@LemonadeApp.Server_HostAddress = http://localhost:5148
+
+GET {{LemonadeApp.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
