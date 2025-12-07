@@ -15,13 +15,28 @@ RUN apt-get update && apt-get install -y curl && \
 FROM with-node AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
+# Copy project files for restore
 COPY ["Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj", "Zillo.Dashboard.Server/"]
 COPY ["Zillo.Domain/Zillo.Domain.csproj", "Zillo.Domain/"]
 COPY ["Zillo.Application/Zillo.Application.csproj", "Zillo.Application/"]
 COPY ["Zillo.Infrastructure/Zillo.Infrastructure.csproj", "Zillo.Infrastructure/"]
+COPY ["zillo.dashboard.client/zillo.dashboard.client.esproj", "zillo.dashboard.client/"]
 COPY ["zillo.dashboard.client/package.json", "zillo.dashboard.client/"]
+COPY ["zillo.dashboard.client/package-lock.json", "zillo.dashboard.client/"]
+
+# Restore .NET dependencies
 RUN dotnet restore "./Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"
+
+# Copy everything else
 COPY . .
+
+# Build frontend
+WORKDIR "/src/zillo.dashboard.client"
+RUN npm ci
+RUN npm run build
+
+# Build backend
 WORKDIR "/src/Zillo.Dashboard.Server"
 RUN dotnet build "./Zillo.Dashboard.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
@@ -34,8 +49,10 @@ RUN dotnet publish "./Zillo.Dashboard.Server.csproj" -c $BUILD_CONFIGURATION -o 
 FROM base AS final
 WORKDIR /app
 
-# Copy certificates for wallet functionality
+# Copy published app
 COPY --from=publish /app/publish .
+
+# Copy certificates for wallet functionality
 COPY Zillo.Dashboard.Server/Certs ./Certs
 
 # Set environment variables for production
