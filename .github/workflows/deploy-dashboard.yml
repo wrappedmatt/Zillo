@@ -16,7 +16,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: Zillo-dashboard
+  ECR_REPOSITORY: zillo-dashboard
 
 permissions:
   id-token: write # Required for OIDC

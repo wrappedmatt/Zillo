@@ -14,4 +14,6 @@ new DashboardStack(app, 'ZilloDashboardStack', {
   hostedZoneName: 'zillo.app',
   githubOwner: 'wrappedmatt',
   githubRepo: 'Zillo',
+  // Set to true after first Docker image is pushed to ECR
+  deployAppRunner: false,
 });

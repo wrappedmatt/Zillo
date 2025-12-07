@@ -3,7 +3,6 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as apprunner from 'aws-cdk-lib/aws-apprunner';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
-import * as route53 from 'aws-cdk-lib/aws-route53';
 import { Construct } from 'constructs';
 
 interface DashboardStackProps extends cdk.StackProps {
@@ -11,24 +10,20 @@ interface DashboardStackProps extends cdk.StackProps {
   hostedZoneName: string;
   githubOwner: string;
   githubRepo: string;
+  /** Set to true after first image is pushed to ECR */
+  deployAppRunner?: boolean;
 }
 
 export class DashboardStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DashboardStackProps) {
     super(scope, id, props);
 
-    // ECR Repository for Dashboard images
-    const repository = new ecr.Repository(this, 'DashboardRepository', {
-      repositoryName: 'Zillo-dashboard',
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-      imageScanOnPush: true,
-      lifecycleRules: [
-        {
-          maxImageCount: 10,
-          description: 'Keep only 10 images',
-        },
-      ],
-    });
+    // ECR Repository for Dashboard images - import existing if it exists
+    const repository = ecr.Repository.fromRepositoryName(
+      this,
+      'DashboardRepository',
+      'zillo-dashboard'
+    );
 
     // GitHub OIDC Provider (check if already exists)
     const githubProvider = new iam.OpenIdConnectProvider(this, 'GitHubOIDCProvider', {
@@ -110,79 +105,6 @@ export class DashboardStack extends cdk.Stack {
     });
     repository.grantPull(appRunnerAccessRole);
 
-    // App Runner Service
-    const appRunnerService = new apprunner.CfnService(this, 'DashboardService', {
-      serviceName: 'Zillo-dashboard',
-      sourceConfiguration: {
-        authenticationConfiguration: {
-          accessRoleArn: appRunnerAccessRole.roleArn,
-        },
-        autoDeploymentsEnabled: true,
-        imageRepository: {
-          imageIdentifier: `${repository.repositoryUri}:latest`,
-          imageRepositoryType: 'ECR',
-          imageConfiguration: {
-            port: '8080',
-            runtimeEnvironmentSecrets: [
-              {
-                name: 'APP_SECRETS_ARN',
-                value: dashboardSecrets.secretArn,
-              },
-              {
-                name: 'APPLE_P12_SECRET_ARN',
-                value: appleP12Secret.secretArn,
-              },
-              {
-                name: 'GOOGLE_KEY_SECRET_ARN',
-                value: googleKeySecret.secretArn,
-              },
-            ],
-            runtimeEnvironmentVariables: [
-              {
-                name: 'ASPNETCORE_ENVIRONMENT',
-                value: 'Production',
-              },
-              {
-                name: 'AWS_REGION',
-                value: 'us-east-1',
-              },
-            ],
-          },
-        },
-      },
-      instanceConfiguration: {
-        cpu: '1024', // 1 vCPU
-        memory: '2048', // 2 GB
-        instanceRoleArn: appRunnerInstanceRole.roleArn,
-      },
-      healthCheckConfiguration: {
-        protocol: 'HTTP',
-        path: '/api/health',
-        interval: 10,
-        timeout: 5,
-        healthyThreshold: 1,
-        unhealthyThreshold: 5,
-      },
-    });
-
-    // Wait for ECR access role before creating service
-    appRunnerService.node.addDependency(appRunnerAccessRole);
-
-    // Look up the hosted zone
-    const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {
-      domainName: props.hostedZoneName,
-    });
-
-    // Custom domain association for App Runner (using CfnResource since L2 construct not available)
-    const customDomain = new cdk.CfnResource(this, 'CustomDomain', {
-      type: 'AWS::AppRunner::CustomDomainAssociation',
-      properties: {
-        DomainName: props.domainName,
-        ServiceArn: appRunnerService.attrServiceArn,
-        EnableWWWSubdomain: false,
-      },
-    });
-
     // Outputs
     new cdk.CfnOutput(this, 'ECRRepositoryUri', {
       value: repository.repositoryUri,
@@ -196,31 +118,92 @@ export class DashboardStack extends cdk.Stack {
       exportName: 'Zillo-GitHub-Role-ARN',
     });
 
-    new cdk.CfnOutput(this, 'AppRunnerServiceUrl', {
-      value: `https://${appRunnerService.attrServiceUrl}`,
-      description: 'App Runner Service URL',
-    });
-
-    new cdk.CfnOutput(this, 'CustomDomainTarget', {
-      value: customDomain.getAtt('DnsTarget').toString(),
-      description: 'CNAME target for custom domain - add to Route 53',
-    });
-
     new cdk.CfnOutput(this, 'SecretsManagerArn', {
       value: dashboardSecrets.secretArn,
       description: 'Secrets Manager ARN - populate with actual values',
     });
 
-    // Output instructions
-    new cdk.CfnOutput(this, 'NextSteps', {
-      value: `
-1. Add GitHub secret: AWS_ROLE_ARN = ${githubActionsRole.roleArn}
-2. Populate secrets in AWS Console: ${dashboardSecrets.secretName}
-3. Upload Apple P12 cert (base64): ${appleP12Secret.secretName}
-4. Upload Google key.json: ${googleKeySecret.secretName}
-5. Add Route 53 CNAME: ${props.domainName} -> (see CustomDomainTarget output)
+    // App Runner Service - only deploy after first image is pushed
+    if (props.deployAppRunner) {
+      const appRunnerService = new apprunner.CfnService(this, 'DashboardService', {
+        serviceName: 'Zillo-dashboard',
+        sourceConfiguration: {
+          authenticationConfiguration: {
+            accessRoleArn: appRunnerAccessRole.roleArn,
+          },
+          autoDeploymentsEnabled: true,
+          imageRepository: {
+            imageIdentifier: `${repository.repositoryUri}:latest`,
+            imageRepositoryType: 'ECR',
+            imageConfiguration: {
+              port: '8080',
+              runtimeEnvironmentSecrets: [
+                {
+                  name: 'APP_SECRETS_ARN',
+                  value: dashboardSecrets.secretArn,
+                },
+                {
+                  name: 'APPLE_P12_SECRET_ARN',
+                  value: appleP12Secret.secretArn,
+                },
+                {
+                  name: 'GOOGLE_KEY_SECRET_ARN',
+                  value: googleKeySecret.secretArn,
+                },
+              ],
+              runtimeEnvironmentVariables: [
+                {
+                  name: 'ASPNETCORE_ENVIRONMENT',
+                  value: 'Production',
+                },
+                {
+                  name: 'AWS_REGION',
+                  value: 'us-east-1',
+                },
+              ],
+            },
+          },
+        },
+        instanceConfiguration: {
+          cpu: '1024', // 1 vCPU
+          memory: '2048', // 2 GB
+          instanceRoleArn: appRunnerInstanceRole.roleArn,
+        },
+        healthCheckConfiguration: {
+          protocol: 'HTTP',
+          path: '/api/health',
+          interval: 10,
+          timeout: 5,
+          healthyThreshold: 1,
+          unhealthyThreshold: 5,
+        },
+      });
+
+      appRunnerService.node.addDependency(appRunnerAccessRole);
+
+      new cdk.CfnOutput(this, 'AppRunnerServiceUrl', {
+        value: `https://${appRunnerService.attrServiceUrl}`,
+        description: 'App Runner Service URL',
+      });
+
+      new cdk.CfnOutput(this, 'NextSteps', {
+        value: `
+1. Add custom domain in App Runner console: ${props.domainName}
+2. Add Route 53 CNAME record for the custom domain
 `,
-      description: 'Setup instructions',
-    });
+        description: 'Setup instructions',
+      });
+    } else {
+      new cdk.CfnOutput(this, 'NextSteps', {
+        value: `
+Phase 1 complete! Now:
+1. Add GitHub secret: AWS_ROLE_ARN (see GitHubActionsRoleArn output)
+2. Populate secrets in AWS Secrets Manager: ${dashboardSecrets.secretName}
+3. Push first Docker image via GitHub Actions (create prod-release branch)
+4. Set deployAppRunner: true in infra/bin/infra.ts and run cdk deploy again
+`,
+        description: 'Setup instructions',
+      });
+    }
   }
 }
