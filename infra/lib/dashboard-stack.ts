@@ -76,7 +76,7 @@ export class DashboardStack extends cdk.Stack {
           'Stripe__PublishableKey': 'REPLACE_ME',
           'Google__MapsApiKey': '',
           'Wallet__Apple__CertificatePassword': 'REPLACE_ME',
-          'Wallet__WebServiceUrl': 'https://app.Zilloup.com',
+          'Wallet__WebServiceUrl': 'https://dashboard.zillo.app',
         }),
         generateStringKey: 'dummy', // Required but we'll delete it
       },

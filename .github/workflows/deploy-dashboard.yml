@@ -3,7 +3,7 @@ name: Deploy Dashboard to AWS
 on:
   push:
     branches:
-      - main
+      - prod-release
     paths:
       - 'Zillo.Dashboard.Server/**'
       - 'Zillo.dashboard.client/**'

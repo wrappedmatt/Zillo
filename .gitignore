@@ -49,3 +49,4 @@ node_modules/
 # CDK
 infra/cdk.out/
 infra/node_modules/
+!infra/bin/
