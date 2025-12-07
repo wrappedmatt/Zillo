@@ -16,25 +16,41 @@ FROM with-node AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy project files for restore
+# Copy project files for restore (excluding esproj to avoid SPA build issues)
 COPY ["Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj", "Zillo.Dashboard.Server/"]
 COPY ["Zillo.Domain/Zillo.Domain.csproj", "Zillo.Domain/"]
 COPY ["Zillo.Application/Zillo.Application.csproj", "Zillo.Application/"]
 COPY ["Zillo.Infrastructure/Zillo.Infrastructure.csproj", "Zillo.Infrastructure/"]
-COPY ["zillo.dashboard.client/zillo.dashboard.client.esproj", "zillo.dashboard.client/"]
+
+# Copy frontend package files
 COPY ["zillo.dashboard.client/package.json", "zillo.dashboard.client/"]
 COPY ["zillo.dashboard.client/package-lock.json", "zillo.dashboard.client/"]
 
-# Restore .NET dependencies
-RUN dotnet restore "./Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"
-
-# Copy everything else
-COPY . .
-
-# Build frontend
+# Install frontend dependencies
 WORKDIR "/src/zillo.dashboard.client"
 RUN npm ci
+
+# Copy frontend source and build
+WORKDIR /src
+COPY ["zillo.dashboard.client/", "zillo.dashboard.client/"]
+WORKDIR "/src/zillo.dashboard.client"
 RUN npm run build
+
+# Copy the built frontend to wwwroot
+RUN mkdir -p /src/Zillo.Dashboard.Server/wwwroot && \
+    cp -r dist/* /src/Zillo.Dashboard.Server/wwwroot/
+
+# Restore .NET dependencies
+WORKDIR /src
+COPY ["Zillo.Domain/", "Zillo.Domain/"]
+COPY ["Zillo.Application/", "Zillo.Application/"]
+COPY ["Zillo.Infrastructure/", "Zillo.Infrastructure/"]
+COPY ["Zillo.Dashboard.Server/", "Zillo.Dashboard.Server/"]
+
+# Remove the esproj reference for Docker build
+RUN sed -i '/<ProjectReference Include="..\\zillo.dashboard.client\\zillo.dashboard.client.esproj"/d' Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj
+
+RUN dotnet restore "./Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"
 
 # Build backend
 WORKDIR "/src/Zillo.Dashboard.Server"
