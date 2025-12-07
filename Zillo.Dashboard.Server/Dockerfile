@@ -16,8 +16,8 @@ FROM with-node AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy project files for restore (excluding esproj to avoid SPA build issues)
-COPY ["Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj", "Zillo.Dashboard.Server/"]
+# Copy project files for restore (use Docker-specific csproj without SPA reference)
+COPY ["Zillo.Dashboard.Server/Zillo.Dashboard.Server.Docker.csproj", "Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"]
 COPY ["Zillo.Domain/Zillo.Domain.csproj", "Zillo.Domain/"]
 COPY ["Zillo.Application/Zillo.Application.csproj", "Zillo.Application/"]
 COPY ["Zillo.Infrastructure/Zillo.Infrastructure.csproj", "Zillo.Infrastructure/"]
@@ -42,15 +42,16 @@ RUN mkdir -p /src/Zillo.Dashboard.Server/wwwroot && \
 
 # Restore .NET dependencies
 WORKDIR /src
+RUN dotnet restore "./Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"
+
+# Copy backend source
 COPY ["Zillo.Domain/", "Zillo.Domain/"]
 COPY ["Zillo.Application/", "Zillo.Application/"]
 COPY ["Zillo.Infrastructure/", "Zillo.Infrastructure/"]
 COPY ["Zillo.Dashboard.Server/", "Zillo.Dashboard.Server/"]
 
-# Remove the esproj reference for Docker build
-RUN sed -i '/<ProjectReference Include="..\\zillo.dashboard.client\\zillo.dashboard.client.esproj"/d' Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj
-
-RUN dotnet restore "./Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"
+# Use the Docker-specific csproj (overwrite the regular one)
+COPY ["Zillo.Dashboard.Server/Zillo.Dashboard.Server.Docker.csproj", "Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"]
 
 # Build backend
 WORKDIR "/src/Zillo.Dashboard.Server"
