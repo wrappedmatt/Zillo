@@ -70,7 +70,7 @@ export default function Settings() {
   })
 
   useEffect(() => {
-    document.title = 'Settings | Lemonade Loyalty'
+    document.title = 'Settings | Zillo'
   }, [])
 
   useEffect(() => {

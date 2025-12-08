@@ -55,7 +55,7 @@ export default function Locations() {
   })
 
   useEffect(() => {
-    document.title = 'Locations | Lemonade Loyalty'
+    document.title = 'Locations | Zillo'
   }, [])
 
   useEffect(() => {

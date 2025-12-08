@@ -23,7 +23,7 @@ export default function SignIn() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    document.title = 'Sign In | Lemonade Loyalty'
+    document.title = 'Sign In | Zillo'
   }, [])
 
   const handleSubmit = async (e) => {

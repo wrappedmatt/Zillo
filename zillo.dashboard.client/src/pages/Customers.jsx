@@ -64,7 +64,7 @@ export default function Customers() {
   const [selectedCustomers, setSelectedCustomers] = useState(new Set())
 
   useEffect(() => {
-    document.title = 'Customers | Lemonade Loyalty'
+    document.title = 'Customers | Zillo'
   }, [])
 
   useEffect(() => {

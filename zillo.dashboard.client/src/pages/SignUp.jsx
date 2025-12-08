@@ -25,7 +25,7 @@ export default function SignUp() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    document.title = 'Sign Up | Lemonade Loyalty'
+    document.title = 'Sign Up | Zillo'
   }, [])
 
   const handleSubmit = async (e) => {
@@ -60,7 +60,7 @@ export default function SignUp() {
                   <Citrus className="h-8 w-8 mb-2" />
                   <h1 className="text-2xl font-bold">Create an account</h1>
                   <p className="text-muted-foreground text-balance">
-                    Sign up for your Lemonade Loyalty account
+                    Sign up for your Zillo account
                   </p>
                 </div>
                 {error && (

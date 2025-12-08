@@ -1,0 +1,10 @@
+{
+  "hosted-zone:account=711801600585:domainName=zillo.app:region=us-east-1": {
+    "Id": "/hostedzone/Z040845929WUCKS0P5IBA",
+    "Name": "zillo.app."
+  },
+  "hosted-zone:account=711801600585:domainName=zillohq.com:region=us-east-1": {
+    "Id": "/hostedzone/Z06129302Z2NOF5W08UH3",
+    "Name": "zillohq.com."
+  }
+}
