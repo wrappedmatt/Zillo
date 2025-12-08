@@ -57,7 +57,8 @@
       "Bash(aws apprunner list-services:*)",
       "Bash(git stash:*)",
       "Bash(git pull:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(gh workflow run:*)"
     ],
     "deny": [],
     "ask": []
