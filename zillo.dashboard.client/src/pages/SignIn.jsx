@@ -51,7 +51,7 @@ export default function SignIn() {
                   <Citrus className="h-8 w-8 mb-2" />
                   <h1 className="text-2xl font-bold">Welcome back</h1>
                   <p className="text-muted-foreground text-balance">
-                    Login to your Lemonade Loyalty account
+                    Login to your Zillo Loyalty account
                   </p>
                 </div>
                 {error && (
@@ -93,7 +93,7 @@ export default function SignIn() {
             <div className="bg-muted relative hidden md:block">
               <img
                 src="/lemonade-hero.jpg"
-                alt="Lemonade Stand"
+                alt="Zillo"
                 className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
               />
             </div>
