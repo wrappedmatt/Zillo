@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
+// Sign in page for Zillo dashboard
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
