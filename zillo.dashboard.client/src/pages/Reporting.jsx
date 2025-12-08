@@ -49,7 +49,7 @@ export default function Reporting() {
   })
 
   useEffect(() => {
-    document.title = 'Reporting | Lemonade Loyalty'
+    document.title = 'Reporting | Zillo'
   }, [])
 
   useEffect(() => {

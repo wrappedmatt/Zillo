@@ -37,7 +37,7 @@ export default function Dashboard() {
   })
 
   useEffect(() => {
-    document.title = 'Dashboard | Lemonade Loyalty'
+    document.title = 'Dashboard | Zillo'
   }, [])
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function Dashboard() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="#">
-                  Lemonade Loyalty
+                  Zillo
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />

@@ -57,7 +57,7 @@ export default function Transactions() {
   const [selectedTransactions, setSelectedTransactions] = useState(new Set())
 
   useEffect(() => {
-    document.title = 'Transactions | Lemonade Loyalty'
+    document.title = 'Transactions | Zillo'
   }, [])
 
   useEffect(() => {

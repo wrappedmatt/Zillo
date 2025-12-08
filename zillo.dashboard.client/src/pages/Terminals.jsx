@@ -35,7 +35,7 @@ export default function Terminals() {
   const [copiedCode, setCopiedCode] = useState(false)
 
   useEffect(() => {
-    document.title = 'Terminals | Lemonade Loyalty'
+    document.title = 'Terminals | Zillo'
   }, [])
 
   useEffect(() => {
@@ -288,7 +288,7 @@ export default function Terminals() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="#">
-                  Lemonade Loyalty
+                  Zillo
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
