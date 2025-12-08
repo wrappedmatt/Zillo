@@ -15,6 +15,7 @@ public interface IWalletService
 
     // Push notifications (called when balance changes)
     Task SendBalanceUpdateNotificationsAsync(Guid customerId);
+    Task SendCustomMessageNotificationAsync(Guid customerId, string message);
 
     // Utility
     Task<bool> ValidateAuthTokenAsync(string serialNumber, string authToken);

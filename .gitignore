@@ -50,3 +50,4 @@ node_modules/
 infra/cdk.out/
 infra/node_modules/
 !infra/bin/
+nul

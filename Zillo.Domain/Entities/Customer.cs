@@ -13,6 +13,8 @@ public class Customer
     public DateTime? CardLinkedAt { get; set; }
     public string? PortalToken { get; set; }
     public DateTime? PortalTokenExpiresAt { get; set; }
+    public string? LastAnnouncementMessage { get; set; }
+    public DateTime? LastAnnouncementAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

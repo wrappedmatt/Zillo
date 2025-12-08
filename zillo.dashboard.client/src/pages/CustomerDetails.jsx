@@ -46,7 +46,8 @@ import {
   Link as LinkIcon,
   Smartphone,
   RefreshCw,
-  DollarSign
+  DollarSign,
+  Bell
 } from 'lucide-react'
 
 export default function CustomerDetails() {
@@ -63,12 +64,15 @@ export default function CustomerDetails() {
   const [adjustmentAmount, setAdjustmentAmount] = useState('')
   const [adjustmentDescription, setAdjustmentDescription] = useState('')
   const [adjustmentSubmitting, setAdjustmentSubmitting] = useState(false)
+  const [notificationDialogOpen, setNotificationDialogOpen] = useState(false)
+  const [notificationMessage, setNotificationMessage] = useState('')
+  const [notificationSubmitting, setNotificationSubmitting] = useState(false)
 
   useEffect(() => {
     if (customer) {
-      document.title = `${customer.name} | Lemonade Loyalty`
+      document.title = `${customer.name} | Zillo Loyalty`
     } else {
-      document.title = 'Customer Details | Lemonade Loyalty'
+      document.title = 'Customer Details | Zillo Loyalty'
     }
   }, [customer])
 
@@ -311,6 +315,41 @@ export default function CustomerDetails() {
     }
   }
 
+  const handleSendNotification = async () => {
+    if (!notificationMessage) {
+      alert('Please enter a message')
+      return
+    }
+
+    try {
+      setNotificationSubmitting(true)
+      const { data: { session } } = await supabase.auth.getSession()
+
+      const response = await fetch(`/api/customers/${customerId}/send-notification`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: notificationMessage })
+      })
+
+      if (response.ok) {
+        alert('Notification sent successfully!')
+        setNotificationDialogOpen(false)
+        setNotificationMessage('')
+      } else {
+        const error = await response.json()
+        alert(`Failed to send notification: ${error.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error)
+      alert('Failed to send notification')
+    } finally {
+      setNotificationSubmitting(false)
+    }
+  }
+
   if (loading) {
     return (
       <SidebarProvider>
@@ -412,6 +451,10 @@ export default function CustomerDetails() {
                   <Button onClick={() => setAdjustmentDialogOpen(true)} variant="outline">
                     <DollarSign className="h-4 w-4 mr-2" />
                     Give Credit
+                  </Button>
+                  <Button onClick={() => setNotificationDialogOpen(true)} variant="outline">
+                    <Bell className="h-4 w-4 mr-2" />
+                    Send Notification
                   </Button>
                   <Button onClick={updateWalletPass} variant="outline">
                     <Smartphone className="h-4 w-4 mr-2" />
@@ -659,6 +702,52 @@ export default function CustomerDetails() {
                   </>
                 ) : (
                   'Add Adjustment'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Send Notification Dialog */}
+        <Dialog open={notificationDialogOpen} onOpenChange={setNotificationDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Send Push Notification</DialogTitle>
+              <DialogDescription>
+                Send a custom message to this customer's Apple Wallet pass.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
+                  placeholder="Enter notification message..."
+                  value={notificationMessage}
+                  onChange={(e) => setNotificationMessage(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setNotificationDialogOpen(false)}
+                disabled={notificationSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSendNotification}
+                disabled={notificationSubmitting}
+              >
+                {notificationSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Send Notification'
                 )}
               </Button>
             </DialogFooter>

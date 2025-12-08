@@ -43,7 +43,17 @@
       "Bash(netstat:*)",
       "Bash(dotnet clean:*)",
       "Bash(copy:*)",
-      "Bash(openssl pkcs12:*)"
+      "Bash(openssl pkcs12:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nConfigure AWS deployment for dashboard.zillo.app\n\n- Add CDK entry point (infra/bin/infra.ts)\n- Fix Dockerfile project references (LemonadeApp → Zillo)\n- Update GitHub Actions to trigger on prod-release branch\n- Configure custom domain as dashboard.zillo.app\n- Add gitignore exception for infra/bin/\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(npx cdk:*)",
+      "Bash(aws ecr describe-repositories:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nConfigure two-phase CDK deployment for AWS\n\n- Fix ECR repository name (lowercase required)\n- Add deployAppRunner flag for phased deployment\n- Import existing ECR repository instead of creating\n- Phase 1: ECR, IAM roles, Secrets Manager\n- Phase 2: App Runner (after first image push)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(git merge:*)",
+      "Bash(del \"c:\\Users\\matt\\source\\repos\\Zillo\\zillo.public.client\\src\\App.css\")",
+      "Bash(aws s3 sync:*)",
+      "Bash(aws cloudfront create-invalidation:*)"
     ],
     "deny": [],
     "ask": []

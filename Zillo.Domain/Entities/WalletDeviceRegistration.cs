@@ -33,6 +33,7 @@ public class WalletDeviceRegistration : BaseModel
 
     // Helper property for enum conversion (not mapped to database)
     [JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
     public WalletType WalletType
     {
         get => WalletTypeString == "google" ? WalletType.Google : WalletType.Apple;

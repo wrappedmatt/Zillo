@@ -129,6 +129,12 @@ public class CustomerModel : Postgrest.Models.BaseModel
     [Postgrest.Attributes.Column("portal_token_expires_at")]
     public DateTime? PortalTokenExpiresAt { get; set; }
 
+    [Postgrest.Attributes.Column("last_announcement_message")]
+    public string? LastAnnouncementMessage { get; set; }
+
+    [Postgrest.Attributes.Column("last_announcement_at")]
+    public DateTime? LastAnnouncementAt { get; set; }
+
     [Postgrest.Attributes.Column("created_at")]
     public DateTime CreatedAt { get; set; }
 
@@ -148,6 +154,8 @@ public class CustomerModel : Postgrest.Models.BaseModel
         CardLinkedAt = CardLinkedAt,
         PortalToken = PortalToken,
         PortalTokenExpiresAt = PortalTokenExpiresAt,
+        LastAnnouncementMessage = LastAnnouncementMessage,
+        LastAnnouncementAt = LastAnnouncementAt,
         CreatedAt = CreatedAt,
         UpdatedAt = UpdatedAt
     };
@@ -165,6 +173,8 @@ public class CustomerModel : Postgrest.Models.BaseModel
         CardLinkedAt = customer.CardLinkedAt,
         PortalToken = customer.PortalToken,
         PortalTokenExpiresAt = customer.PortalTokenExpiresAt,
+        LastAnnouncementMessage = customer.LastAnnouncementMessage,
+        LastAnnouncementAt = customer.LastAnnouncementAt,
         CreatedAt = customer.CreatedAt,
         UpdatedAt = customer.UpdatedAt
     };

@@ -223,6 +223,17 @@ public class WalletService : IWalletService
         // Add secondary fields
         request.AddSecondaryField(new StandardField("company", "STORE", account.CompanyName));
 
+        // Add announcement field as secondary - changeMessage will trigger notification
+        var announcementMessage = customer.LastAnnouncementMessage ?? "Welcome!";
+        var announcementField = new StandardField
+        {
+            Key = "message",
+            Label = "Message",
+            Value = announcementMessage,
+            ChangeMessage = "%@"  // This will display the message value in the notification
+        };
+        request.AddBackField(announcementField);
+
         // Add back fields
         request.AddBackField(new StandardField("earnRate", "Earn Rate", earnRateDisplay));
         request.AddBackField(new StandardField("customerId", "Member ID", customer.Id.ToString()));
@@ -637,7 +648,38 @@ public class WalletService : IWalletService
         }
     }
 
-    private async Task SendApplePushNotification(string pushToken)
+    public async Task SendCustomMessageNotificationAsync(Guid customerId, string message)
+    {
+        // Update customer with the last announcement message
+        var customer = await _customerRepository.GetByIdAsync(customerId);
+        if (customer != null)
+        {
+            customer.LastAnnouncementMessage = message;
+            customer.LastAnnouncementAt = DateTime.UtcNow;
+            customer.UpdatedAt = DateTime.UtcNow;
+            await _customerRepository.UpdateAsync(customer);
+        }
+
+        var registrations = await _walletDeviceRepository.GetByCustomerIdAsync(customerId);
+
+        foreach (var registration in registrations)
+        {
+            try
+            {
+                if (registration.WalletType == WalletType.Apple)
+                {
+                    await SendApplePushNotification(registration.PushToken, message);
+                }
+                // Note: Google Wallet doesn't support custom message notifications
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send custom message to device {DeviceId}", registration.DeviceLibraryIdentifier);
+            }
+        }
+    }
+
+    private async Task SendApplePushNotification(string pushToken, string? message = null)
     {
         var certPath = _configuration["Wallet:Apple:CertificatePath"];
         var certPassword = _configuration["Wallet:Apple:CertificatePassword"];
@@ -652,16 +694,53 @@ public class WalletService : IWalletService
         {
             // Apple Wallet uses HTTP/2 APNs
             // The push payload for Wallet passes is empty - just signals an update is available
-            var handler = new HttpClientHandler();
-            handler.ClientCertificates.Add(new X509Certificate2(certPath, certPassword));
+            var certificate = new X509Certificate2(certPath, certPassword,
+                X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet);
+
+            // Extract topic from certificate subject (format: ...UID=pass.com.example.app...)
+            var topic = _configuration["Wallet:Apple:PassTypeIdentifier"];
+            if (string.IsNullOrEmpty(topic) && certificate.Subject.Contains("UID="))
+            {
+                var uidStart = certificate.Subject.LastIndexOf("UID=") + 4;
+                var uidEnd = certificate.Subject.IndexOf(',', uidStart);
+                topic = uidEnd > uidStart
+                    ? certificate.Subject.Substring(uidStart, uidEnd - uidStart)
+                    : certificate.Subject.Substring(uidStart);
+            }
+
+            var handler = new HttpClientHandler
+            {
+                ClientCertificateOptions = ClientCertificateOption.Manual
+            };
+            handler.ClientCertificates.Add(certificate);
 
             using var apnsClient = new HttpClient(handler);
-            apnsClient.DefaultRequestVersion = new Version(2, 0);
 
             var request = new HttpRequestMessage(HttpMethod.Post,
                 $"https://api.push.apple.com/3/device/{pushToken}");
-            request.Headers.Add("apns-topic", _configuration["Wallet:Apple:PassTypeIdentifier"]);
-            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+            request.Version = new Version(2, 0);
+            request.Headers.Add("apns-topic", topic);
+
+            // Build push payload - either empty (balance update) or with message
+            string payload;
+            if (string.IsNullOrEmpty(message))
+            {
+                // Empty payload for balance updates - just triggers pass refresh
+                payload = "{}";
+            }
+            else
+            {
+                // Payload with alert message for custom notifications
+                payload = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    aps = new { alert = message }
+                });
+            }
+
+            request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+            _logger.LogInformation("Sending APNs push to production endpoint for device {PushToken} with topic {Topic} (hasMessage: {HasMessage})",
+                pushToken.Substring(0, Math.Min(8, pushToken.Length)) + "...", topic, !string.IsNullOrEmpty(message));
 
             var response = await apnsClient.SendAsync(request);
 
@@ -669,6 +748,10 @@ public class WalletService : IWalletService
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("APNs push failed: {StatusCode} - {Error}", response.StatusCode, error);
+            }
+            else
+            {
+                _logger.LogInformation("APNs push notification sent successfully");
             }
         }
         catch (Exception ex)

@@ -12,6 +12,7 @@ public class CustomersController : ControllerBase
     private readonly ICustomerService _customerService;
     private readonly IAuthService _authService;
     private readonly ICustomerPortalService _portalService;
+    private readonly IWalletService _walletService;
     private readonly ICardRepository _cardRepository;
     private readonly ITransactionRepository _transactionRepository;
     private readonly ILogger<CustomersController> _logger;
@@ -20,6 +21,7 @@ public class CustomersController : ControllerBase
         ICustomerService customerService,
         IAuthService authService,
         ICustomerPortalService portalService,
+        IWalletService walletService,
         ICardRepository cardRepository,
         ITransactionRepository transactionRepository,
         ILogger<CustomersController> logger)
@@ -27,6 +29,7 @@ public class CustomersController : ControllerBase
         _customerService = customerService;
         _authService = authService;
         _portalService = portalService;
+        _walletService = walletService;
         _cardRepository = cardRepository;
         _transactionRepository = transactionRepository;
         _logger = logger;
@@ -156,7 +159,15 @@ public class CustomersController : ControllerBase
                 return NotFound();
 
             var cards = await _cardRepository.GetByCustomerIdAsync(id);
-            return Ok(cards);
+            var cardDtos = cards.Select(c => new CardInfoDto(
+                c.Id,
+                c.CardLast4 ?? "",
+                c.CardBrand ?? "",
+                c.IsPrimary,
+                c.FirstUsedAt,
+                c.LastUsedAt
+            ));
+            return Ok(cardDtos);
         }
         catch (Exception ex)
         {
@@ -180,7 +191,19 @@ public class CustomersController : ControllerBase
                 return NotFound();
 
             var transactions = await _transactionRepository.GetByCustomerIdAsync(id);
-            return Ok(transactions);
+            var transactionDtos = transactions.Select(t => new TransactionDto(
+                t.Id,
+                t.CustomerId,
+                t.Points,
+                t.CashbackAmount,
+                t.Amount,
+                t.Type,
+                t.Description,
+                t.CreatedAt,
+                t.PaymentId,
+                t.StripePaymentIntentId
+            ));
+            return Ok(transactionDtos);
         }
         catch (Exception ex)
         {
@@ -239,4 +262,32 @@ public class CustomersController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpPost("{id}/send-notification")]
+    public async Task<IActionResult> SendNotification(Guid id, [FromBody] SendNotificationRequest request)
+    {
+        try
+        {
+            var accountId = await GetAccountIdFromToken();
+            if (accountId == null)
+                return Unauthorized();
+
+            // Verify customer belongs to this account
+            var customer = await _customerService.GetCustomerByIdAsync(id, accountId.Value);
+            if (customer == null)
+                return NotFound();
+
+            // Send push notification with custom message
+            await _walletService.SendCustomMessageNotificationAsync(id, request.Message);
+
+            return Ok(new { message = "Notification sent successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending notification");
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }
+
+public record SendNotificationRequest(string Message);
