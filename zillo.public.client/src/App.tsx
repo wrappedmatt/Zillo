@@ -271,18 +271,18 @@ export default function App() {
       <header className="absolute inset-x-0 top-0 z-50">
         <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
           <div className="flex lg:flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
-              <span className="sr-only">Zillo</span>
+            <a href="#" className="-m-1.5 p-1.5 flex items-center gap-x-2">
               <img
-                alt=""
+                alt="Zillo"
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
                 className="h-8 w-auto dark:hidden"
               />
               <img
-                alt=""
+                alt="Zillo"
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
                 className="hidden h-8 w-auto dark:block"
               />
+              <span className="text-pretty text-3xl font-semibold tracking-tight text-gray-900 sm:text-3xl dark:text-white">zillo</span>
             </a>
           </div>
           <div className="flex lg:hidden">
@@ -312,18 +312,18 @@ export default function App() {
           <div className="fixed inset-0 z-50" />
           <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-100/10">
             <div className="flex items-center justify-between">
-              <a href="#" className="-m-1.5 p-1.5">
-                <span className="sr-only">Zillo</span>
+              <a href="#" className="-m-1.5 p-1.5 flex items-center gap-x-2">
                 <img
-                  alt=""
+                  alt="Zillo"
                   src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
                   className="h-8 w-auto dark:hidden"
                 />
                 <img
-                  alt=""
+                  alt="Zillo"
                   src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
                   className="hidden h-8 w-auto dark:block"
                 />
+                <span className="text-pretty text-3xl font-semibold tracking-tight text-gray-900 sm:text-3xl dark:text-white">zillo</span>
               </a>
               <button
                 type="button"
