@@ -36,9 +36,9 @@ COPY ["zillo.dashboard.client/", "zillo.dashboard.client/"]
 WORKDIR "/src/zillo.dashboard.client"
 RUN npm run build
 
-# Copy the built frontend to wwwroot
-RUN mkdir -p /src/Zillo.Dashboard.Server/wwwroot && \
-    cp -r dist/* /src/Zillo.Dashboard.Server/wwwroot/
+# Save the built frontend to a temporary location
+RUN mkdir -p /tmp/frontend-build && \
+    cp -r dist/* /tmp/frontend-build/
 
 # Restore .NET dependencies
 WORKDIR /src
@@ -52,6 +52,11 @@ COPY ["Zillo.Dashboard.Server/", "Zillo.Dashboard.Server/"]
 
 # Use the Docker-specific csproj (overwrite the regular one)
 COPY ["Zillo.Dashboard.Server/Zillo.Dashboard.Server.Docker.csproj", "Zillo.Dashboard.Server/Zillo.Dashboard.Server.csproj"]
+
+# Copy the freshly built frontend to wwwroot (overwriting any stale files from repo)
+RUN rm -rf /src/Zillo.Dashboard.Server/wwwroot && \
+    mkdir -p /src/Zillo.Dashboard.Server/wwwroot && \
+    cp -r /tmp/frontend-build/* /src/Zillo.Dashboard.Server/wwwroot/
 
 # Build backend
 WORKDIR "/src/Zillo.Dashboard.Server"
