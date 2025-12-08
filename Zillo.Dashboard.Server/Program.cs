@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Load secrets from AWS Secrets Manager in production
 if (builder.Environment.IsProduction())
 {
-    await LoadSecretsFromAwsAsync(builder.Configuration);
+    await LoadSecretsFromAwsAsync(builder);
 }
 
 // Add services to the container.
@@ -116,7 +116,7 @@ app.MapFallbackToFile("/index.html");
 app.Run();
 
 // Helper function to load secrets from AWS Secrets Manager
-static async Task LoadSecretsFromAwsAsync(IConfiguration configuration)
+static async Task LoadSecretsFromAwsAsync(WebApplicationBuilder builder)
 {
     var secretsArn = Environment.GetEnvironmentVariable("APP_SECRETS_ARN");
     if (string.IsNullOrEmpty(secretsArn))
@@ -139,19 +139,16 @@ static async Task LoadSecretsFromAwsAsync(IConfiguration configuration)
             var secrets = JsonSerializer.Deserialize<Dictionary<string, string>>(response.SecretString);
             if (secrets != null)
             {
+                // Add secrets as in-memory configuration source
+                var secretsDict = new Dictionary<string, string?>();
                 foreach (var kvp in secrets)
                 {
-                    // Convert double underscore to colon for .NET configuration
+                    // Convert double underscore to colon for .NET configuration hierarchy
                     var key = kvp.Key.Replace("__", ":");
-                    Environment.SetEnvironmentVariable(key.Replace(":", "__"), kvp.Value);
-
-                    // Also set directly in configuration memory
-                    if (configuration is IConfigurationRoot configRoot)
-                    {
-                        // Use environment variable format
-                        Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
-                    }
+                    secretsDict[key] = kvp.Value;
                 }
+
+                builder.Configuration.AddInMemoryCollection(secretsDict);
                 Console.WriteLine($"Loaded {secrets.Count} secrets from AWS Secrets Manager");
             }
         }
