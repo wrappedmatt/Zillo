@@ -6,7 +6,7 @@ on:
       - prod-release
     paths:
       - 'Zillo.Dashboard.Server/**'
-      - 'Zillo.dashboard.client/**'
+      - 'zillo.dashboard.client/**'
       - 'Zillo.Domain/**'
       - 'Zillo.Application/**'
       - 'Zillo.Infrastructure/**'
