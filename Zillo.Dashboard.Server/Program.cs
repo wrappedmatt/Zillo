@@ -115,28 +115,47 @@ app.MapFallbackToFile("/index.html");
 
 app.Run();
 
-// Helper function to load secrets from AWS Secrets Manager
+// Helper function to load secrets - handles both direct JSON injection and Secrets Manager ARN
 static async Task LoadSecretsFromAwsAsync(WebApplicationBuilder builder)
 {
-    var secretsArn = Environment.GetEnvironmentVariable("APP_SECRETS_ARN");
-    if (string.IsNullOrEmpty(secretsArn))
+    var secretsValue = Environment.GetEnvironmentVariable("APP_SECRETS_ARN");
+    if (string.IsNullOrEmpty(secretsValue))
     {
-        Console.WriteLine("APP_SECRETS_ARN not set, skipping AWS Secrets Manager");
+        Console.WriteLine("APP_SECRETS_ARN not set, skipping secrets loading");
         return;
     }
 
     try
     {
-        using var client = new AmazonSecretsManagerClient();
+        string? secretsJson;
 
-        var response = await client.GetSecretValueAsync(new GetSecretValueRequest
+        // Check if the value is a JSON object (injected by App Runner) or an ARN (needs fetching)
+        if (secretsValue.TrimStart().StartsWith("{"))
         {
-            SecretId = secretsArn
-        });
+            // Value is already JSON - App Runner injected the secret value directly
+            secretsJson = secretsValue;
+            Console.WriteLine("APP_SECRETS_ARN contains JSON, using directly");
+        }
+        else if (secretsValue.StartsWith("arn:aws:secretsmanager:"))
+        {
+            // Value is an ARN - fetch from Secrets Manager
+            Console.WriteLine("APP_SECRETS_ARN contains ARN, fetching from Secrets Manager");
+            using var client = new AmazonSecretsManagerClient();
+            var response = await client.GetSecretValueAsync(new GetSecretValueRequest
+            {
+                SecretId = secretsValue
+            });
+            secretsJson = response.SecretString;
+        }
+        else
+        {
+            Console.WriteLine($"APP_SECRETS_ARN has unexpected format: {secretsValue.Substring(0, Math.Min(50, secretsValue.Length))}...");
+            return;
+        }
 
-        if (!string.IsNullOrEmpty(response.SecretString))
+        if (!string.IsNullOrEmpty(secretsJson))
         {
-            var secrets = JsonSerializer.Deserialize<Dictionary<string, string>>(response.SecretString);
+            var secrets = JsonSerializer.Deserialize<Dictionary<string, string>>(secretsJson);
             if (secrets != null)
             {
                 // Add secrets as in-memory configuration source
@@ -149,12 +168,12 @@ static async Task LoadSecretsFromAwsAsync(WebApplicationBuilder builder)
                 }
 
                 builder.Configuration.AddInMemoryCollection(secretsDict);
-                Console.WriteLine($"Loaded {secrets.Count} secrets from AWS Secrets Manager");
+                Console.WriteLine($"Loaded {secrets.Count} secrets successfully");
             }
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Warning: Failed to load secrets from AWS: {ex.Message}");
+        Console.WriteLine($"Warning: Failed to load secrets: {ex.Message}");
     }
 }
