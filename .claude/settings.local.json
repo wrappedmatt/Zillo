@@ -56,7 +56,8 @@
       "Bash(aws cloudfront create-invalidation:*)",
       "Bash(aws apprunner list-services:*)",
       "Bash(git stash:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

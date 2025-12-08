@@ -1,0 +1,6 @@
+@Zillo.API_HostAddress = http://localhost:5121
+
+GET {{Zillo.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

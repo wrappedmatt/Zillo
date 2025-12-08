@@ -5,6 +5,8 @@ interface DashboardStackProps extends cdk.StackProps {
     hostedZoneName: string;
     githubOwner: string;
     githubRepo: string;
+    /** Set to true after first image is pushed to ECR */
+    deployAppRunner?: boolean;
 }
 export declare class DashboardStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props: DashboardStackProps);

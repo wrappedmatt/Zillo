@@ -2,10 +2,12 @@ using Zillo.Application.Services;
 using Zillo.Domain.Interfaces;
 using Zillo.Infrastructure.Repositories;
 using Zillo.Infrastructure.Services;
+using Zillo.API.Middleware;
 using Supabase;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
 using System.Text.Json;
+using Asp.Versioning;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +16,6 @@ if (builder.Environment.IsProduction())
 {
     await LoadSecretsFromAwsAsync(builder);
 }
-
-// Add services to the container.
 
 // Configure Supabase
 var supabaseUrl = builder.Configuration["Supabase:Url"] ?? throw new InvalidOperationException("Supabase URL is required");
@@ -45,36 +45,52 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<ITerminalRepository, TerminalRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<IUnclaimedTransactionRepository, UnclaimedTransactionRepository>();
-builder.Services.AddScoped<IWalletDeviceRegistrationRepository, WalletDeviceRegistrationRepository>();
-builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
 // Register services
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITerminalService, TerminalService>();
-builder.Services.AddScoped<ICustomerPortalService, CustomerPortalService>();
-builder.Services.AddScoped<IWalletService, WalletService>();
-
-// Add HttpClient for wallet services (Google Wallet API calls)
-builder.Services.AddHttpClient<IWalletService, WalletService>();
-
-// Add HttpClient factory for geocoding and other HTTP calls
-builder.Services.AddHttpClient();
 
 // Add memory cache for terminal API key validation
 builder.Services.AddMemoryCache();
 
+// Add API versioning
+builder.Services.AddApiVersioning(options =>
+{
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.ReportApiVersions = true;
+    options.ApiVersionReader = ApiVersionReader.Combine(
+        new UrlSegmentApiVersionReader(),
+        new HeaderApiVersionReader("X-Api-Version")
+    );
+})
+.AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+});
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new() { Title = "Zillo API", Version = "v1" });
+});
+
+// Add CORS for terminal app
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("TerminalPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
-
-app.UseDefaultFiles();
-app.UseStaticFiles();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -83,17 +99,30 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseCors("TerminalPolicy");
+
+// Apply terminal authentication middleware to protected endpoints
+app.UseWhen(
+    context =>
+    {
+        var path = context.Request.Path.Value?.ToLower() ?? "";
+        // Apply to endpoints that require terminal authentication
+        return path.Contains("/payments/") ||
+               path.Contains("/customers/") ||
+               path.EndsWith("/branding");
+    },
+    appBuilder =>
+    {
+        appBuilder.UseTerminalAuth();
+    });
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapFallbackToFile("/index.html");
-
 app.Run();
 
-// Helper function to load secrets - handles both direct JSON injection and Secrets Manager ARN
+// Helper function to load secrets
 static async Task LoadSecretsFromAwsAsync(WebApplicationBuilder builder)
 {
     var secretsValue = Environment.GetEnvironmentVariable("APP_SECRETS_ARN");
@@ -107,16 +136,13 @@ static async Task LoadSecretsFromAwsAsync(WebApplicationBuilder builder)
     {
         string? secretsJson;
 
-        // Check if the value is a JSON object (injected by App Runner) or an ARN (needs fetching)
         if (secretsValue.TrimStart().StartsWith("{"))
         {
-            // Value is already JSON - App Runner injected the secret value directly
             secretsJson = secretsValue;
             Console.WriteLine("APP_SECRETS_ARN contains JSON, using directly");
         }
         else if (secretsValue.StartsWith("arn:aws:secretsmanager:"))
         {
-            // Value is an ARN - fetch from Secrets Manager
             Console.WriteLine("APP_SECRETS_ARN contains ARN, fetching from Secrets Manager");
             using var client = new AmazonSecretsManagerClient();
             var response = await client.GetSecretValueAsync(new GetSecretValueRequest
@@ -127,7 +153,7 @@ static async Task LoadSecretsFromAwsAsync(WebApplicationBuilder builder)
         }
         else
         {
-            Console.WriteLine($"APP_SECRETS_ARN has unexpected format: {secretsValue.Substring(0, Math.Min(50, secretsValue.Length))}...");
+            Console.WriteLine($"APP_SECRETS_ARN has unexpected format");
             return;
         }
 
@@ -136,11 +162,9 @@ static async Task LoadSecretsFromAwsAsync(WebApplicationBuilder builder)
             var secrets = JsonSerializer.Deserialize<Dictionary<string, string>>(secretsJson);
             if (secrets != null)
             {
-                // Add secrets as in-memory configuration source
                 var secretsDict = new Dictionary<string, string?>();
                 foreach (var kvp in secrets)
                 {
-                    // Convert double underscore to colon for .NET configuration hierarchy
                     var key = kvp.Key.Replace("__", ":");
                     secretsDict[key] = kvp.Value;
                 }

@@ -19,6 +19,8 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "zillo.dashboard.client", "z
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "zillo.rewards.client", "zillo.rewards.client\zillo.rewards.client.esproj", "{76E0ECB7-E05A-49E2-B26B-0D5643E4CC68}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zillo.API", "Zillo.API\Zillo.API.csproj", "{51820734-1936-48B4-9394-43CF1AA37368}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,18 @@ Global
 		{76E0ECB7-E05A-49E2-B26B-0D5643E4CC68}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76E0ECB7-E05A-49E2-B26B-0D5643E4CC68}.Release|x64.ActiveCfg = Release|Any CPU
 		{76E0ECB7-E05A-49E2-B26B-0D5643E4CC68}.Release|x86.ActiveCfg = Release|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Debug|x64.Build.0 = Debug|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Debug|x86.Build.0 = Debug|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Release|x64.ActiveCfg = Release|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Release|x64.Build.0 = Release|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Release|x86.ActiveCfg = Release|Any CPU
+		{51820734-1936-48B4-9394-43CF1AA37368}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
