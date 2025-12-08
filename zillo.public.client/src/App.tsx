@@ -8,7 +8,6 @@ import {
   CreditCardIcon,
   DevicePhoneMobileIcon,
   SparklesIcon,
-  UserGroupIcon,
   ChartBarIcon,
   BoltIcon,
 } from '@heroicons/react/20/solid'
