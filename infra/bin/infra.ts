@@ -50,6 +50,5 @@ new RewardsStack(app, 'ZilloRewardsStack', {
     region: 'us-east-1',
   },
   domainName: 'rewards.zillo.app',
-  // Set to true after first Docker image is pushed to ECR
-  deployAppRunner: false,
+  deployAppRunner: true,
 });
