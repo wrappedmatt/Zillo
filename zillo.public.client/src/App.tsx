@@ -4,64 +4,65 @@ import { useState } from 'react'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import {
-  ArrowPathIcon,
   ChevronRightIcon,
-  CloudArrowUpIcon,
-  LockClosedIcon,
-  ServerIcon,
+  CreditCardIcon,
+  DevicePhoneMobileIcon,
+  SparklesIcon,
+  UserGroupIcon,
+  ChartBarIcon,
+  BoltIcon,
 } from '@heroicons/react/20/solid'
 
 const navigation = [
-  { name: 'Product', href: '#' },
-  { name: 'Features', href: '#' },
-  { name: 'Marketplace', href: '#' },
-  { name: 'Company', href: '#' },
+  { name: 'Features', href: '#features' },
+  { name: 'How it works', href: '#how-it-works' },
+  { name: 'Pricing', href: '#pricing' },
 ]
 const primaryFeatures = [
   {
-    name: 'Push to deploy.',
-    description: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit aute id magna.',
-    icon: CloudArrowUpIcon,
+    name: 'Automatic customer capture.',
+    description: 'Every card tap creates a customer profile. Build your database without lifting a finger.',
+    icon: CreditCardIcon,
   },
   {
-    name: 'SSL certificates.',
-    description: 'Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.',
-    icon: LockClosedIcon,
+    name: 'Apple & Google Wallet.',
+    description: 'Digital loyalty cards your customers actually use. One tap to add, always in their pocket.',
+    icon: DevicePhoneMobileIcon,
   },
   {
-    name: 'Database backups.',
-    description: 'Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus.',
-    icon: ServerIcon,
+    name: 'Smart marketing.',
+    description: 'Personalized campaigns that bring customers back, powered by real purchase data.',
+    icon: SparklesIcon,
   },
 ]
 const secondaryFeatures = [
   {
-    name: 'Push to deploy',
+    name: 'Tokenized loyalty',
     description:
-      'Commodo nec sagittis tortor mauris sed. Turpis tortor quis scelerisque diam id accumsan nullam tempus. Pulvinar etiam lacus volutpat eu. Phasellus praesent ligula sit faucibus.',
+      'Securely link payment cards to customer profiles. No apps to download, no cards to carry. Loyalty happens automatically at checkout.',
     href: '#',
-    icon: CloudArrowUpIcon,
+    icon: CreditCardIcon,
   },
   {
-    name: 'SSL certificates',
+    name: 'Real-time analytics',
     description:
-      'Pellentesque enim a commodo malesuada turpis eleifend risus. Facilisis donec placerat sapien consequat tempor fermentum nibh.',
+      'See who your best customers are, what they buy, and when they visit. Make data-driven decisions that grow your business.',
     href: '#',
-    icon: LockClosedIcon,
+    icon: ChartBarIcon,
   },
   {
-    name: 'Simple queues',
+    name: 'Instant rewards',
     description:
-      'Pellentesque sit elit congue ante nec amet. Dolor aenean curabitur viverra suspendisse iaculis eget. Nec mollis placerat ultricies euismod ut condimentum.',
+      'Customers earn and redeem points seamlessly. No friction, no forgotten punch cards. Just tap and earn.',
     href: '#',
-    icon: ArrowPathIcon,
+    icon: BoltIcon,
   },
 ]
 const featuredTestimonial = {
-  body: 'Integer id nunc sit semper purus. Bibendum at lacus ut arcu blandit montes vitae auctor libero. Hac condimentum dignissim nibh vulputate ut nunc. Amet nibh orci mi venenatis blandit vel et proin. Non hendrerit in vel ac diam.',
+  body: 'Zillo completely changed how we think about customer relationships. We went from knowing nothing about our customers to having detailed profiles and running targeted campaigns. Our repeat customer rate jumped 40% in three months.',
   author: {
-    name: 'Brenna Goyette',
-    handle: 'brennagoyette',
+    name: 'Sarah Chen',
+    handle: 'sarahchen',
     imageUrl:
       'https://images.unsplash.com/photo-1550525811-e5869dd03032?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=1024&h=1024&q=80',
     logoUrl: 'https://tailwindcss.com/plus-assets/img/logos/savvycal-logo-gray-900.svg',
@@ -71,28 +72,28 @@ const testimonials = [
   [
     [
       {
-        body: 'Laborum quis quam. Dolorum et ut quod quia. Voluptas numquam delectus nihil. Aut enim doloremque et ipsam.',
+        body: 'The Apple Wallet integration is a game-changer. Customers love tapping to earn points without carrying another card.',
         author: {
-          name: 'Leslie Alexander',
-          handle: 'lesliealexander',
+          name: 'Marcus Thompson',
+          handle: 'marcusthompson',
           imageUrl:
             'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
       },
       {
-        body: 'Quia dolorem qui et. Atque quo aliquid sit eos officia. Dolores similique laboriosam quaerat cupiditate.',
+        body: 'We finally understand who our customers are. The analytics dashboard shows us exactly what drives repeat visits.',
         author: {
-          name: 'Michael Foster',
-          handle: 'michaelfoster',
+          name: 'Emily Rodriguez',
+          handle: 'emilyrodriguez',
           imageUrl:
             'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
       },
       {
-        body: 'Consequatur ut atque. Itaque nostrum molestiae id veniam eos cumque. Ut quia eum fugit laborum autem inventore ut voluptate.',
+        body: 'Setup took 15 minutes. Now every card tap automatically builds our customer list. Should have done this years ago.',
         author: {
-          name: 'Dries Vincent',
-          handle: 'driesvincent',
+          name: 'James Park',
+          handle: 'jamespark',
           imageUrl:
             'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
@@ -100,19 +101,19 @@ const testimonials = [
     ],
     [
       {
-        body: 'Aut reprehenderit voluptatem eum asperiores beatae id. Iure molestiae ipsam ut officia rem nulla blanditiis.',
+        body: 'Our marketing campaigns now reach customers who actually care. Open rates are through the roof.',
         author: {
-          name: 'Lindsay Walton',
-          handle: 'lindsaywalton',
+          name: 'Amanda Foster',
+          handle: 'amandafoster',
           imageUrl:
             'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
       },
       {
-        body: 'Nam nesciunt dolorem dolor asperiores cum. Incidunt molestiae quis deleniti vitae ut in earum delectus iusto.',
+        body: 'The tokenized loyalty means no more lost punch cards. Customers earn rewards automatically with every purchase.',
         author: {
-          name: 'Courtney Henry',
-          handle: 'courtneyhenry',
+          name: 'David Kim',
+          handle: 'davidkim',
           imageUrl:
             'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
@@ -122,19 +123,19 @@ const testimonials = [
   [
     [
       {
-        body: 'Voluptas quos itaque ipsam in voluptatem est. Iste eos blanditiis repudiandae. Earum deserunt enim molestiae ipsum perferendis recusandae saepe corrupti.',
+        body: 'Before Zillo, we had no idea who was walking through our door. Now we can welcome regulars by name and know their preferences.',
         author: {
-          name: 'Tom Cook',
-          handle: 'tomcook',
+          name: 'Rachel Martinez',
+          handle: 'rachelmartinez',
           imageUrl:
             'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
       },
       {
-        body: 'Aliquid dolore praesentium ratione. Cumque ea officia repellendus laboriosam. Vitae quod id explicabo non sunt.',
+        body: 'The ROI was immediate. More repeat customers, higher average tickets, and zero extra work at checkout.',
         author: {
-          name: 'Whitney Francis',
-          handle: 'whitneyfrancis',
+          name: 'Chris Anderson',
+          handle: 'chrisanderson',
           imageUrl:
             'https://images.unsplash.com/photo-1517365830460-955ce3ccd263?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
@@ -142,28 +143,28 @@ const testimonials = [
     ],
     [
       {
-        body: 'Molestias ea earum quos nostrum doloremque sed. Quaerat quasi aut velit incidunt excepturi rerum voluptatem minus harum.',
+        body: 'Integration with our Stripe terminal was seamless. Zillo just works.',
         author: {
-          name: 'Leonard Krasner',
-          handle: 'leonardkrasner',
+          name: 'Lisa Wong',
+          handle: 'lisawong',
           imageUrl:
             'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
       },
       {
-        body: 'Architecto libero natus est. Est quam debitis officia enim atque et ut non. Sunt reiciendis quasi eaque. Itaque error ut et.',
+        body: 'Our coffee shop went from anonymous transactions to a community. Customers feel recognized and rewarded.',
         author: {
-          name: 'Floyd Miles',
-          handle: 'floydmiles',
+          name: 'Mike Johnson',
+          handle: 'mikejohnson',
           imageUrl:
             'https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
       },
       {
-        body: 'Temporibus ea molestiae impedit adipisci perspiciatis illo aliquid. Quis ut ratione et voluptatem et. Nostrum explicabo iste unde beatae.',
+        body: 'The smart marketing features are incredible. Automated birthday rewards, win-back campaigns - it all runs itself.',
         author: {
-          name: 'Emily Selman',
-          handle: 'emilyselman',
+          name: 'Jennifer Lee',
+          handle: 'jenniferlee',
           imageUrl:
             'https://images.unsplash.com/photo-1502685104226-ee32379fefbe?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         },
@@ -172,28 +173,25 @@ const testimonials = [
   ],
 ]
 const footerNavigation = {
-  solutions: [
-    { name: 'Marketing', href: '#' },
-    { name: 'Analytics', href: '#' },
-    { name: 'Automation', href: '#' },
-    { name: 'Commerce', href: '#' },
-    { name: 'Insights', href: '#' },
+  product: [
+    { name: 'Features', href: '#features' },
+    { name: 'Pricing', href: '#pricing' },
+    { name: 'Integrations', href: '#' },
+    { name: 'API', href: '#' },
   ],
   support: [
-    { name: 'Submit ticket', href: '#' },
+    { name: 'Help center', href: '#' },
     { name: 'Documentation', href: '#' },
-    { name: 'Guides', href: '#' },
+    { name: 'Contact us', href: '#' },
   ],
   company: [
     { name: 'About', href: '#' },
     { name: 'Blog', href: '#' },
-    { name: 'Jobs', href: '#' },
-    { name: 'Press', href: '#' },
+    { name: 'Careers', href: '#' },
   ],
   legal: [
     { name: 'Terms of service', href: '#' },
     { name: 'Privacy policy', href: '#' },
-    { name: 'License', href: '#' },
   ],
   social: [
     {
@@ -274,7 +272,7 @@ export default function App() {
         <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
           <div className="flex lg:flex-1">
             <a href="#" className="-m-1.5 p-1.5">
-              <span className="sr-only">Your Company</span>
+              <span className="sr-only">Zillo</span>
               <img
                 alt=""
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
@@ -315,7 +313,7 @@ export default function App() {
           <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-gray-900 dark:sm:ring-gray-100/10">
             <div className="flex items-center justify-between">
               <a href="#" className="-m-1.5 p-1.5">
-                <span className="sr-only">Your Company</span>
+                <span className="sr-only">Zillo</span>
                 <img
                   alt=""
                   src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
@@ -394,31 +392,30 @@ export default function App() {
             <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
               <div className="flex">
                 <div className="relative flex items-center gap-x-4 rounded-full bg-white px-4 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20 dark:bg-white/5 dark:text-gray-300 dark:ring-white/10 dark:hover:ring-white/20">
-                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">We're hiring</span>
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">New</span>
                   <span aria-hidden="true" className="h-4 w-px bg-gray-900/10 dark:bg-white/10" />
                   <a href="#" className="flex items-center gap-x-1">
                     <span aria-hidden="true" className="absolute inset-0" />
-                    See open positions
+                    Apple & Google Wallet support
                     <ChevronRightIcon aria-hidden="true" className="-mr-2 size-5 text-gray-400" />
                   </a>
                 </div>
               </div>
               <h1 className="mt-10 text-pretty text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl dark:text-white">
-                A better way to ship your projects
+                Turn every payment into a loyal customer
               </h1>
               <p className="mt-8 text-pretty text-lg font-medium text-gray-500 sm:text-xl/8 dark:text-gray-400">
-                Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo. Elit sunt amet
-                fugiat veniam occaecat fugiat aliqua. Anim aute id magna aliqua ad ad non deserunt sunt.
+                Zillo transforms anonymous card transactions into a growing customer database. With tokenized loyalty, digital wallet passes, and smart personalized marketing - all from your payment terminal.
               </p>
               <div className="mt-10 flex items-center gap-x-6">
                 <a
                   href="#"
                   className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
                 >
-                  Get started
+                  Start free trial
                 </a>
                 <a href="#" className="text-sm/6 font-semibold text-gray-900 dark:text-white">
-                  Learn more <span aria-hidden="true">→</span>
+                  See how it works <span aria-hidden="true">→</span>
                 </a>
               </div>
             </div>
@@ -535,11 +532,10 @@ export default function App() {
             <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2 lg:items-center lg:gap-y-0">
               <div className="lg:row-start-2 lg:max-w-md">
                 <h2 className="text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                  Boost your productivity. Start using our app today.
+                  Grow your customer database automatically.
                 </h2>
                 <p className="mt-6 text-lg/8 text-gray-300">
-                  Ac euismod vel sit maecenas id pellentesque eu sed consectetur. Malesuada adipiscing sagittis vel
-                  nulla. Ac euismod vel sit maecenas.
+                  Every tap at your terminal is an opportunity. Zillo captures customer data from card payments and builds detailed profiles - no extra steps required.
                 </p>
               </div>
               <img
@@ -584,13 +580,12 @@ export default function App() {
         {/* Feature section */}
         <div className="mx-auto mt-16 max-w-7xl px-6 sm:mt-24 lg:px-8">
           <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base/7 font-semibold text-indigo-600 dark:text-indigo-400">Deploy faster</h2>
+            <h2 className="text-base/7 font-semibold text-indigo-600 dark:text-indigo-400">Powerful features</h2>
             <p className="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl lg:text-balance dark:text-white">
-              Everything you need to deploy your app
+              Everything you need to build loyalty
             </p>
             <p className="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
-              Quis tellus eget adipiscing convallis sit sit eget aliquet quis. Suspendisse eget egestas a elementum
-              pulvinar et feugiat blandit at. In mi viverra elit nunc.
+              From automatic customer capture to personalized marketing campaigns, Zillo gives you the tools to turn one-time buyers into repeat customers.
             </p>
           </div>
           <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
@@ -625,10 +620,10 @@ export default function App() {
         <div className="mx-auto mt-16 max-w-7xl sm:mt-24 sm:px-6 lg:px-8">
           <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-24 shadow-2xl sm:rounded-3xl sm:px-24 xl:py-32 dark:bg-gray-800 dark:shadow-none dark:after:pointer-events-none dark:after:absolute dark:after:inset-0 dark:after:rounded-3xl dark:after:ring-1 dark:after:ring-inset dark:after:ring-white/15">
             <h2 className="mx-auto max-w-3xl text-center text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-              Get notified when we're launching
+              Ready to grow your customer base?
             </h2>
             <p className="mx-auto mt-6 max-w-lg text-center text-lg text-gray-300">
-              Reprehenderit ad esse et non officia in nulla. Id proident tempor incididunt nostrud nulla et culpa.
+              Join businesses already using Zillo to turn anonymous transactions into lasting customer relationships.
             </p>
             <form className="mx-auto mt-10 flex max-w-md gap-x-4">
               <label htmlFor="email-address" className="sr-only">
@@ -647,7 +642,7 @@ export default function App() {
                 type="submit"
                 className="flex-none rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:shadow-none"
               >
-                Notify me
+                Get started
               </button>
             </form>
             <svg
@@ -728,7 +723,7 @@ export default function App() {
               <div className="mx-auto max-w-2xl text-center">
                 <h2 className="text-base/7 font-semibold text-indigo-600 dark:text-indigo-400">Testimonials</h2>
                 <p className="mt-2 text-balance text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">
-                  We have worked with thousands of amazing people
+                  Loved by businesses everywhere
                 </p>
               </div>
               <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 grid-rows-1 gap-8 text-sm/6 text-gray-900 sm:mt-20 sm:grid-cols-2 xl:mx-0 xl:max-w-none xl:grid-flow-col xl:grid-cols-4 dark:text-gray-100">
@@ -823,9 +818,9 @@ export default function App() {
             <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
               <div className="md:grid md:grid-cols-2 md:gap-8">
                 <div>
-                  <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">Solutions</h3>
+                  <h3 className="text-sm/6 font-semibold text-gray-900 dark:text-white">Product</h3>
                   <ul role="list" className="mt-6 space-y-4">
-                    {footerNavigation.solutions.map((item) => (
+                    {footerNavigation.product.map((item) => (
                       <li key={item.name}>
                         <a
                           href={item.href}
@@ -931,7 +926,7 @@ export default function App() {
               ))}
             </div>
             <p className="mt-8 text-sm/6 text-gray-600 md:order-1 md:mt-0 dark:text-gray-400">
-              &copy; 2024 Your Company, Inc. All rights reserved.
+              &copy; 2025 Zillo. All rights reserved.
             </p>
           </div>
         </div>
