@@ -53,7 +53,10 @@
       "Bash(git merge:*)",
       "Bash(del \"c:\\Users\\matt\\source\\repos\\Zillo\\zillo.public.client\\src\\App.css\")",
       "Bash(aws s3 sync:*)",
-      "Bash(aws cloudfront create-invalidation:*)"
+      "Bash(aws cloudfront create-invalidation:*)",
+      "Bash(aws apprunner list-services:*)",
+      "Bash(git stash:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
