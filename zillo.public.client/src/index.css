@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-sans--font-feature-settings: "cv11";
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @layer base {
