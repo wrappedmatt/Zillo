@@ -390,7 +390,7 @@ export default function App() {
             </svg>
             <rect fill="url(#83fd4e5a-9d52-42fc-97b6-718e5d7ee527)" width="100%" height="100%" strokeWidth={0} />
           </svg>
-          <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:flex lg:items-center lg:gap-x-10 lg:px-8 lg:py-40">
+          <div className="mx-auto max-w-7xl px-6 py-15 sm:0 lg:flex lg:items-center lg:gap-x-10 lg:px-8 lg:py-15">
             <div className="mx-auto max-w-2xl lg:mx-0 lg:flex-auto">
               <div className="flex">
                 <div className="relative flex items-center gap-x-4 rounded-full bg-white px-4 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20 dark:bg-white/5 dark:text-gray-300 dark:ring-white/10 dark:hover:ring-white/20">
@@ -530,7 +530,7 @@ export default function App() {
         </div>
 
         {/* Feature section */}
-        <div className="mx-auto mt-32 max-w-7xl sm:mt-56 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-16 max-w-7xl sm:mt-24 sm:px-6 lg:px-8">
           <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-20 sm:rounded-3xl sm:px-10 sm:py-24 lg:py-24 xl:px-24 dark:bg-gray-800/50 dark:after:pointer-events-none dark:after:absolute dark:after:inset-0 dark:after:rounded-3xl dark:after:ring-1 dark:after:ring-inset dark:after:ring-white/10">
             <div className="mx-auto grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2 lg:items-center lg:gap-y-0">
               <div className="lg:row-start-2 lg:max-w-md">
@@ -582,7 +582,7 @@ export default function App() {
         </div>
 
         {/* Feature section */}
-        <div className="mx-auto mt-32 max-w-7xl px-6 sm:mt-56 lg:px-8">
+        <div className="mx-auto mt-16 max-w-7xl px-6 sm:mt-24 lg:px-8">
           <div className="mx-auto max-w-2xl lg:text-center">
             <h2 className="text-base/7 font-semibold text-indigo-600 dark:text-indigo-400">Deploy faster</h2>
             <p className="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl lg:text-balance dark:text-white">
@@ -622,7 +622,7 @@ export default function App() {
         </div>
 
         {/* Newsletter section */}
-        <div className="mx-auto mt-32 max-w-7xl sm:mt-56 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-16 max-w-7xl sm:mt-24 sm:px-6 lg:px-8">
           <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-24 shadow-2xl sm:rounded-3xl sm:px-24 xl:py-32 dark:bg-gray-800 dark:shadow-none dark:after:pointer-events-none dark:after:absolute dark:after:inset-0 dark:after:rounded-3xl dark:after:ring-1 dark:after:ring-inset dark:after:ring-white/15">
             <h2 className="mx-auto max-w-3xl text-center text-4xl font-semibold tracking-tight text-white sm:text-5xl">
               Get notified when we're launching
@@ -674,7 +674,7 @@ export default function App() {
         </div>
 
         {/* Testimonials section */}
-        <div className="relative isolate mt-32 sm:mt-56 sm:pt-32">
+        <div className="relative isolate mt-16 sm:mt-24 sm:pt-16">
           <svg
             aria-hidden="true"
             className="absolute inset-0 -z-10 hidden size-full stroke-gray-200 [mask-image:radial-gradient(64rem_64rem_at_top,white,transparent)] sm:block dark:stroke-white/10"
@@ -807,7 +807,7 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-32 sm:mt-56">
+      <footer className="mt-16 sm:mt-24">
         <div className="mx-auto max-w-7xl border-t border-gray-200 px-6 pb-8 pt-16 sm:pt-24 lg:px-8 lg:pt-32 dark:border-white/10">
           <div className="xl:grid xl:grid-cols-3 xl:gap-8">
             <img
