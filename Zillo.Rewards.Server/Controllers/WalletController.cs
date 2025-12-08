@@ -2,7 +2,7 @@ using Zillo.Application.DTOs;
 using Zillo.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Zillo.Dashboard.Server.Controllers;
+namespace Zillo.Rewards.Server.Controllers;
 
 [ApiController]
 [Route("api/wallet")]
@@ -228,32 +228,6 @@ public class WalletController : ControllerBase
     {
         _logger.LogInformation("Apple Wallet log: {LogData}", logData);
         return Ok();
-    }
-
-    #endregion
-
-    #region Admin Endpoints (called from dashboard)
-
-    /// <summary>
-    /// Update wallet pass for a customer and send push notifications
-    /// POST /api/wallet/update-pass/{customerId}
-    /// </summary>
-    [HttpPost("update-pass/{customerId}")]
-    public async Task<IActionResult> UpdateWalletPass(Guid customerId)
-    {
-        try
-        {
-            // Send balance update notifications (works for both Apple and Google Wallet)
-            await _walletService.SendBalanceUpdateNotificationsAsync(customerId);
-
-            _logger.LogInformation("Wallet pass updated for customer {CustomerId}", customerId);
-            return Ok(new { message = "Wallet pass updated successfully" });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating wallet pass for customer {CustomerId}", customerId);
-            return StatusCode(500, new { error = "Failed to update wallet pass" });
-        }
     }
 
     #endregion

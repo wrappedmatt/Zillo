@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { DashboardStack } from '../lib/dashboard-stack';
 import { PublicSiteStack } from '../lib/public-site-stack';
 import { ApiStack } from '../lib/api-stack';
+import { RewardsStack } from '../lib/rewards-stack';
 
 const app = new cdk.App();
 
@@ -40,4 +41,15 @@ new PublicSiteStack(app, 'ZilloPublicSiteStack', {
   domainName: 'zillohq.com',
   hostedZoneName: 'zillohq.com',
   githubActionsRoleArn: `arn:aws:iam::${process.env.CDK_DEFAULT_ACCOUNT}:role/Zillo-GitHubActions-Role`,
+});
+
+// Rewards service (App Runner)
+new RewardsStack(app, 'ZilloRewardsStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: 'us-east-1',
+  },
+  domainName: 'rewards.zillo.app',
+  // Set to true after first Docker image is pushed to ECR
+  deployAppRunner: false,
 });

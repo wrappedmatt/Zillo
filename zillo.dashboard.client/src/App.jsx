@@ -10,8 +10,6 @@ import Transactions from './pages/Transactions'
 import Settings from './pages/Settings'
 import Locations from './pages/Locations'
 import Reporting from './pages/Reporting'
-import CustomerSignup from './pages/CustomerSignup'
-import CustomerPortal from './pages/CustomerPortal'
 
 function App() {
   return (
@@ -35,10 +33,6 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/locations" element={<Locations />} />
           <Route path="/reporting" element={<Reporting />} />
-
-          {/* Public Customer Portal Routes */}
-          <Route path="/signup/:slug" element={<CustomerSignup />} />
-          <Route path="/portal/:token" element={<CustomerPortal />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

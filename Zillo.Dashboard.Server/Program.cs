@@ -44,8 +44,6 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<ITerminalRepository, TerminalRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
-builder.Services.AddScoped<IUnclaimedTransactionRepository, UnclaimedTransactionRepository>();
-builder.Services.AddScoped<IWalletDeviceRegistrationRepository, WalletDeviceRegistrationRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
 // Register services
@@ -54,11 +52,6 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITerminalService, TerminalService>();
-builder.Services.AddScoped<ICustomerPortalService, CustomerPortalService>();
-builder.Services.AddScoped<IWalletService, WalletService>();
-
-// Add HttpClient for wallet services (Google Wallet API calls)
-builder.Services.AddHttpClient<IWalletService, WalletService>();
 
 // Add HttpClient factory for geocoding and other HTTP calls
 builder.Services.AddHttpClient();

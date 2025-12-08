@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Loader2, CreditCard, TrendingUp, TrendingDown, Gift, Calendar, Wallet, Download, X } from 'lucide-react';
+import { Loader2, CreditCard, TrendingUp, TrendingDown, Gift, Calendar, Wallet, X } from 'lucide-react';
 
 export default function CustomerPortal() {
   const { token } = useParams();
@@ -67,7 +66,7 @@ export default function CustomerPortal() {
 
   useEffect(() => {
     if (portalData?.name) {
-      const companyName = portalData.companyName || 'Lemonade';
+      const companyName = portalData.companyName || 'Zillo';
       document.title = `${portalData.name} | ${companyName} Loyalty`;
     } else {
       document.title = 'Customer Portal | Loyalty Rewards';
@@ -100,16 +99,6 @@ export default function CustomerPortal() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   const getTransactionIcon = (type) => {

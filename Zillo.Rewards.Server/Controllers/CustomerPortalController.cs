@@ -1,7 +1,7 @@
 using Zillo.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Zillo.Dashboard.Server.Controllers;
+namespace Zillo.Rewards.Server.Controllers;
 
 [ApiController]
 [Route("api/customer-portal")]

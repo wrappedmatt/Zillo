@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264 48" width="264" height="48">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4285F4"/>
+      <stop offset="25%" style="stop-color:#34A853"/>
+      <stop offset="50%" style="stop-color:#FBBC04"/>
+      <stop offset="75%" style="stop-color:#EA4335"/>
+      <stop offset="100%" style="stop-color:#4285F4"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="264" height="48" rx="8" fill="#000000"/>
+  <rect x="1" y="1" width="262" height="46" rx="7" fill="#1F1F1F"/>
+  <!-- Google Wallet Icon -->
+  <g transform="translate(16, 12)">
+    <!-- Blue card -->
+    <rect x="0" y="8" width="16" height="10" rx="2" fill="#4285F4"/>
+    <!-- Red card -->
+    <rect x="4" y="4" width="16" height="10" rx="2" fill="#EA4335"/>
+    <!-- Yellow card -->
+    <rect x="8" y="0" width="16" height="10" rx="2" fill="#FBBC04"/>
+  </g>
+  <!-- Text -->
+  <text x="48" y="22" font-family="Google Sans, Roboto, Arial, sans-serif" font-size="11" fill="#FFFFFF">Add to</text>
+  <text x="48" y="36" font-family="Google Sans, Roboto, Arial, sans-serif" font-size="15" font-weight="500" fill="#FFFFFF">Google Wallet</text>
+</svg>

@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Gift, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
 
@@ -223,9 +222,9 @@ export default function CustomerSignup() {
               <CheckCircle2 className="h-6 w-6" style={{ color: branding.primaryColor }} />
             </div>
             <CardTitle className="text-2xl">Welcome to {preview?.companyName}!</CardTitle>
-            <CardDescription>
+            <p className="text-muted-foreground text-sm">
               Your account has been created successfully. Redirecting to your portal...
-            </CardDescription>
+            </p>
           </CardHeader>
         </Card>
       </div>
