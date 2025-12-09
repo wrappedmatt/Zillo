@@ -9,6 +9,6 @@ public class HealthController : ControllerBase
     [HttpGet("health")]
     public IActionResult Health()
     {
-        return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+        return Ok(new { status = "healthy", service = "api", version = "1.0.0", timestamp = DateTime.UtcNow });
     }
 }
