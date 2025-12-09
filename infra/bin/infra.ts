@@ -39,6 +39,7 @@ new ApiEcsStack(app, 'ZilloApiEcsStack', {
     region: 'us-east-1',
   },
   domainName: 'api.zillo.app',
+  hostedZoneName: 'zillo.app',
 });
 
 // Public marketing site (S3 + CloudFront)

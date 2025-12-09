@@ -6,10 +6,14 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
 interface ApiEcsStackProps extends cdk.StackProps {
   domainName: string;
+  hostedZoneName?: string;
 }
 
 export class ApiEcsStack extends cdk.Stack {
@@ -171,10 +175,42 @@ export class ApiEcsStack extends cdk.Stack {
       },
     });
 
-    // HTTP Listener (will redirect to HTTPS once certificate is added)
+    // Look up hosted zone for DNS
+    const hostedZoneName = props.hostedZoneName || 'zillo.app';
+    const hostedZone = route53.HostedZone.fromLookup(this, 'HostedZone', {
+      domainName: hostedZoneName,
+    });
+
+    // Create ACM Certificate with DNS validation
+    const certificate = new acm.Certificate(this, 'ApiCertificate', {
+      domainName: props.domainName,
+      validation: acm.CertificateValidation.fromDns(hostedZone),
+    });
+
+    // HTTPS Listener
+    const httpsListener = alb.addListener('HttpsListener', {
+      port: 443,
+      certificates: [certificate],
+      defaultAction: elbv2.ListenerAction.forward([targetGroup]),
+    });
+
+    // HTTP Listener - redirect to HTTPS
     const httpListener = alb.addListener('HttpListener', {
       port: 80,
-      defaultAction: elbv2.ListenerAction.forward([targetGroup]),
+      defaultAction: elbv2.ListenerAction.redirect({
+        protocol: 'HTTPS',
+        port: '443',
+        permanent: true,
+      }),
+    });
+
+    // Route 53 DNS record
+    new route53.ARecord(this, 'ApiDnsRecord', {
+      zone: hostedZone,
+      recordName: props.domainName.split('.')[0], // 'api' from 'api.zillo.app'
+      target: route53.RecordTarget.fromAlias(
+        new route53Targets.LoadBalancerTarget(alb)
+      ),
     });
 
     // ECS Service
@@ -219,13 +255,9 @@ export class ApiEcsStack extends cdk.Stack {
       description: 'ALB ARN (for adding HTTPS listener)',
     });
 
-    new cdk.CfnOutput(this, 'NextSteps', {
-      value: `
-1. Create ACM certificate for ${props.domainName}
-2. Add HTTPS listener to ALB with certificate
-3. Create Route 53 ALIAS record pointing to ALB
-`,
-      description: 'Setup instructions',
+    new cdk.CfnOutput(this, 'ApiUrl', {
+      value: `https://${props.domainName}`,
+      description: 'API URL',
     });
   }
 }
