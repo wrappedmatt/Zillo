@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib';
 import { DashboardStack } from '../lib/dashboard-stack';
 import { PublicSiteStack } from '../lib/public-site-stack';
 import { ApiStack } from '../lib/api-stack';
+import { ApiEcsStack } from '../lib/api-ecs-stack';
 import { RewardsStack } from '../lib/rewards-stack';
 
 const app = new cdk.App();
@@ -21,15 +22,23 @@ const dashboardStack = new DashboardStack(app, 'ZilloDashboardStack', {
   deployAppRunner: true,
 });
 
-// API service (App Runner)
+// API service - Phase 1: ECR repository (App Runner blocked by account limit)
 new ApiStack(app, 'ZilloApiStack', {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: 'us-east-1',
   },
   domainName: 'api.zillo.app',
-  // Set to true after first Docker image is pushed to ECR
-  deployAppRunner: false,
+  deployAppRunner: false, // Using ECS instead
+});
+
+// API service - ECS Fargate (low latency for terminal API)
+new ApiEcsStack(app, 'ZilloApiEcsStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: 'us-east-1',
+  },
+  domainName: 'api.zillo.app',
 });
 
 // Public marketing site (S3 + CloudFront)
