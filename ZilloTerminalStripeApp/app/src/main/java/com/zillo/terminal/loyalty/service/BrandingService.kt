@@ -1,7 +1,7 @@
-package com.lemonade.terminal.loyalty.service
+package com.zillo.terminal.loyalty.service
 
 import android.util.Log
-import com.lemonade.terminal.loyalty.data.BrandingSettings
+import com.zillo.terminal.loyalty.data.BrandingSettings
 import com.stripe.aod.sampleapp.Config
 import com.stripe.aod.sampleapp.network.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,10 +29,10 @@ object BrandingService {
             _brandingSettings.value = settings
             isInitialized = true
             Log.d(Config.TAG, "Branding settings loaded: ${settings.companyName}")
-            
+
             // Also fetch account configuration for loyalty system
             fetchAccountConfiguration()
-            
+
             Result.success(settings)
         } catch (e: Exception) {
             Log.e(Config.TAG, "Failed to fetch branding settings", e)
@@ -49,7 +49,7 @@ object BrandingService {
         return try {
             Log.d(Config.TAG, "Fetching account configuration from backend...")
             val accountConfig = ApiClient.backendService.getAccountConfiguration()
-            
+
             // Update Config with fetched values
             Config.loyaltySystemType = accountConfig.loyaltySystemType ?: "cashback"
             Config.cashbackRate = accountConfig.cashbackRate ?: 5.0
@@ -62,7 +62,7 @@ object BrandingService {
             Log.d(Config.TAG, "  - Cashback Rate: ${Config.cashbackRate}%")
             Log.d(Config.TAG, "  - Points Rate: ${Config.pointsRate} points per dollar")
             Log.d(Config.TAG, "  - Welcome Incentive: $${Config.welcomeIncentive}")
-            
+
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(Config.TAG, "Failed to fetch account configuration", e)

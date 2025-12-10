@@ -1,7 +1,7 @@
 package com.stripe.aod.sampleapp.network
 
 import android.util.Log
-import com.lemonade.terminal.loyalty.data.PairingResponse
+import com.zillo.terminal.loyalty.data.PairingResponse
 import com.stripe.aod.sampleapp.BuildConfig
 import com.stripe.aod.sampleapp.Config
 import com.stripe.aod.sampleapp.data.ApplyRedemptionResponse

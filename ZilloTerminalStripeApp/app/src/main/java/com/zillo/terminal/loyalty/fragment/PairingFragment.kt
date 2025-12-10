@@ -1,4 +1,4 @@
-package com.lemonade.terminal.loyalty.fragment
+package com.zillo.terminal.loyalty.fragment
 
 import android.os.Build
 import android.os.Bundle
@@ -13,7 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.lemonade.terminal.loyalty.storage.SecureStorage
+import com.zillo.terminal.loyalty.storage.SecureStorage
 import com.stripe.aod.sampleapp.R
 import com.stripe.aod.sampleapp.network.ApiClient
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment for pairing a terminal device with the Lemonade backend
+ * Fragment for pairing a terminal device with the Zillo backend
  * User enters a pairing code generated from the dashboard
  */
 class PairingFragment : Fragment() {

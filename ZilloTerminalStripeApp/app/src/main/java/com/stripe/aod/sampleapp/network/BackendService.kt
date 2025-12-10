@@ -1,8 +1,8 @@
 package com.stripe.aod.sampleapp.network
 
-import com.lemonade.terminal.loyalty.data.AccountConfig
-import com.lemonade.terminal.loyalty.data.BrandingSettings
-import com.lemonade.terminal.loyalty.data.PairingResponse
+import com.zillo.terminal.loyalty.data.AccountConfig
+import com.zillo.terminal.loyalty.data.BrandingSettings
+import com.zillo.terminal.loyalty.data.PairingResponse
 import com.stripe.aod.sampleapp.data.ApplyRedemptionResponse
 import com.stripe.aod.sampleapp.data.CapturePaymentResponse
 import com.stripe.aod.sampleapp.data.CustomerCreditResponse

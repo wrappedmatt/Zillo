@@ -1,14 +1,14 @@
 # Backend Integration Guide
 
-This guide explains how to integrate the LemonadeTerminalApp with your LemonadeApp.Server backend.
+This guide explains how to integrate the ZilloTerminalApp with your Zillo.API backend.
 
 ## Overview
 
-The terminal app requires specific API endpoints to handle Stripe Terminal payments and loyalty point management. You'll need to add a new `TerminalController` to your `LemonadeApp.Server` project.
+The terminal app requires specific API endpoints to handle Stripe Terminal payments and loyalty point management. You'll need to add a new `TerminalController` to your `Zillo.API` project.
 
 ## Required NuGet Packages
 
-Add these to `LemonadeApp.Server.csproj`:
+Add these to `Zillo.API.csproj`:
 
 ```xml
 <PackageReference Include="Stripe.net" Version="45.0.0" />
@@ -18,7 +18,7 @@ Add these to `LemonadeApp.Server.csproj`:
 
 ### 1. Add Stripe Configuration
 
-Edit `LemonadeApp.Server/appsettings.json`:
+Edit `Zillo.API/appsettings.json`:
 
 ```json
 {
@@ -46,16 +46,16 @@ Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 ### TerminalController.cs
 
-Create a new controller at `LemonadeApp.Server/Controllers/TerminalController.cs`:
+Create a new controller at `Zillo.API/Controllers/TerminalController.cs`:
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using Stripe.Terminal;
-using LemonadeApp.Application.Services;
-using LemonadeApp.Application.DTOs;
+using Zillo.Application.Services;
+using Zillo.Application.DTOs;
 
-namespace LemonadeApp.Server.Controllers
+namespace Zillo.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -106,13 +106,13 @@ namespace LemonadeApp.Server.Controllers
             {
                 var amount = long.Parse(parameters["amount"]);
                 var currency = parameters.GetValueOrDefault("currency", "nzd");
-                var description = parameters.GetValueOrDefault("description", "Lemonade purchase");
+                var description = parameters.GetValueOrDefault("description", "Zillo purchase");
 
                 var options = new PaymentIntentCreateOptions
                 {
                     Amount = amount,
                     Currency = currency,
-                    Description = description,
+                    Description = "Zillo purchase",
                     PaymentMethodTypes = new List<string> { "card_present" },
                     CaptureMethod = "manual" // Manual capture for loyalty redemption flow
                 };
@@ -377,7 +377,7 @@ public async Task<IActionResult> CapturePaymentIntent([FromForm] string payment_
 ### 1. Start the Backend
 
 ```bash
-cd LemonadeApp.Server
+cd Zillo.API
 dotnet run
 ```
 

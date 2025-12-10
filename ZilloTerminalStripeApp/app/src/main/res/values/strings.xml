@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Lemonade Terminal</string>
+    <string name="app_name">Zillo Terminal</string>
 
-    <string name="terminal_sample_app">Lemonade\nsmart terminal</string>
+    <string name="terminal_sample_app">Zillo\nsmart terminal</string>
     <string name="new_payment">New payment</string>
 
     <string name="please_select_reader">Please select a reader first!</string>
@@ -30,7 +30,7 @@
     <string name="checkout">Checkout</string>
     <string name="amount_entered">Amount entered</string>
     <string name="settings">Settings</string>
-    <string name="stripe">Lemonade</string>
+    <string name="stripe">Zillo</string>
     <string name="back">Back</string>
 
     <string name="error_fail_to_send_email_receipt">Failed to send receipt email</string>
@@ -54,7 +54,7 @@
     <string name="points_format">%d points</string>
 
     <!-- QR Code -->
-    <string name="scan_to_join">Scan to Join Lemonade Rewards</string>
+    <string name="scan_to_join">Scan to Join Zillo Rewards</string>
     <string name="scan_qr_description">Scan this QR code with your phone to sign up and claim your points</string>
     <string name="qr_code">QR Code</string>
     <string name="done">Done</string>
