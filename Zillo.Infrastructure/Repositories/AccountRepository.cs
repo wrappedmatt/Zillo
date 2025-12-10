@@ -53,6 +53,16 @@ public class AccountRepository : IAccountRepository
         return response?.ToEntity();
     }
 
+    public async Task<Account?> GetByStripeAccountIdAsync(string stripeAccountId)
+    {
+        var response = await _supabase
+            .From<AccountModel>()
+            .Where(x => x.StripeAccountId == stripeAccountId)
+            .Single();
+
+        return response?.ToEntity();
+    }
+
     public async Task<List<Account>> GetAllAsync()
     {
         var response = await _supabase
@@ -183,6 +193,25 @@ public class AccountModel : Postgrest.Models.BaseModel
     [Postgrest.Attributes.Column("wallet_pass_foreground_color")]
     public string WalletPassForegroundColor { get; set; } = "#FFFFFF";
 
+    // Stripe Connect Integration
+    [Postgrest.Attributes.Column("stripe_account_id")]
+    public string? StripeAccountId { get; set; }
+
+    [Postgrest.Attributes.Column("stripe_onboarding_status")]
+    public string StripeOnboardingStatus { get; set; } = "not_started";
+
+    [Postgrest.Attributes.Column("stripe_charges_enabled")]
+    public bool StripeChargesEnabled { get; set; } = false;
+
+    [Postgrest.Attributes.Column("stripe_payouts_enabled")]
+    public bool StripePayoutsEnabled { get; set; } = false;
+
+    [Postgrest.Attributes.Column("stripe_account_updated_at")]
+    public DateTime? StripeAccountUpdatedAt { get; set; }
+
+    [Postgrest.Attributes.Column("platform_fee_percentage")]
+    public decimal PlatformFeePercentage { get; set; } = 0.00m;
+
     [Postgrest.Attributes.Column("created_at")]
     public DateTime CreatedAt { get; set; }
 
@@ -222,6 +251,12 @@ public class AccountModel : Postgrest.Models.BaseModel
         WalletPassStripUrl = WalletPassStripUrl,
         WalletPassLabelColor = WalletPassLabelColor,
         WalletPassForegroundColor = WalletPassForegroundColor,
+        StripeAccountId = StripeAccountId,
+        StripeOnboardingStatus = StripeOnboardingStatus,
+        StripeChargesEnabled = StripeChargesEnabled,
+        StripePayoutsEnabled = StripePayoutsEnabled,
+        StripeAccountUpdatedAt = StripeAccountUpdatedAt,
+        PlatformFeePercentage = PlatformFeePercentage,
         CreatedAt = CreatedAt,
         UpdatedAt = UpdatedAt
     };
@@ -259,6 +294,12 @@ public class AccountModel : Postgrest.Models.BaseModel
         WalletPassStripUrl = account.WalletPassStripUrl,
         WalletPassLabelColor = account.WalletPassLabelColor,
         WalletPassForegroundColor = account.WalletPassForegroundColor,
+        StripeAccountId = account.StripeAccountId,
+        StripeOnboardingStatus = account.StripeOnboardingStatus,
+        StripeChargesEnabled = account.StripeChargesEnabled,
+        StripePayoutsEnabled = account.StripePayoutsEnabled,
+        StripeAccountUpdatedAt = account.StripeAccountUpdatedAt,
+        PlatformFeePercentage = account.PlatformFeePercentage,
         CreatedAt = account.CreatedAt,
         UpdatedAt = account.UpdatedAt
     };

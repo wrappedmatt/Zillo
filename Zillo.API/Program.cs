@@ -109,7 +109,8 @@ app.UseWhen(
         // Apply to endpoints that require terminal authentication
         return path.Contains("/payments/") ||
                path.Contains("/customers/") ||
-               path.EndsWith("/branding");
+               path.EndsWith("/branding") ||
+               path.EndsWith("/connection-token");
     },
     appBuilder =>
     {
