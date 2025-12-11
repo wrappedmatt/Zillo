@@ -51,6 +51,6 @@
     <!--divider line -->
     <color name="divider_line">#36373A</color>
 
-    <!-- Lemonade branding -->
-    <color name="lemonade_yellow">#FDD835</color>
+    <!-- Zillo branding -->
+    <color name="zillo_yellow">#FDD835</color>
 </resources>

@@ -10,7 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.snackbar.Snackbar
-import com.lemonade.terminal.loyalty.service.BrandingService
+import com.zillo.terminal.loyalty.service.BrandingService
 import com.stripe.aod.sampleapp.Config
 import com.stripe.aod.sampleapp.R
 import com.stripe.aod.sampleapp.databinding.FragmentLoyaltyPointsBinding

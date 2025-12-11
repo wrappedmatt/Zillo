@@ -1,4 +1,4 @@
-package com.lemonade.terminal.loyalty.storage
+package com.zillo.terminal.loyalty.storage
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -11,7 +11,7 @@ import androidx.security.crypto.MasterKey
  */
 object SecureStorage {
 
-    private const val PREFS_FILENAME = "lemonade_terminal_secure_prefs"
+    private const val PREFS_FILENAME = "zillo_terminal_secure_prefs"
     private const val KEY_TERMINAL_API_KEY = "terminal_api_key"
     private const val KEY_TERMINAL_ID = "terminal_id"
     private const val KEY_ACCOUNT_ID = "account_id"

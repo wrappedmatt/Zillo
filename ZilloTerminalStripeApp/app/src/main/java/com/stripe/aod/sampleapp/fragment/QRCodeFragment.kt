@@ -11,7 +11,7 @@ import androidx.navigation.fragment.navArgs
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
-import com.lemonade.terminal.loyalty.service.BrandingService
+import com.zillo.terminal.loyalty.service.BrandingService
 import com.stripe.aod.sampleapp.Config
 import com.stripe.aod.sampleapp.R
 import com.stripe.aod.sampleapp.databinding.FragmentQrCodeBinding
@@ -63,7 +63,7 @@ class QRCodeFragment : Fragment(R.layout.fragment_qr_code) {
         }
     }
 
-    private fun applyBranding(viewBinding: FragmentQrCodeBinding, branding: com.lemonade.terminal.loyalty.data.BrandingSettings) {
+    private fun applyBranding(viewBinding: FragmentQrCodeBinding, branding: com.zillo.terminal.loyalty.data.BrandingSettings) {
         // Apply background color
         viewBinding.root.setBackgroundColor(
             BrandingService.parseColor(branding.backgroundColor)

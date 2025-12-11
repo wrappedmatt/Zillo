@@ -1,4 +1,4 @@
-package com.lemonade.terminal.loyalty.data
+package com.zillo.terminal.loyalty.data
 
 import com.google.gson.annotations.SerializedName
 
@@ -60,7 +60,7 @@ data class BrandingSettings(
          * Default branding settings as fallback
          */
         fun default() = BrandingSettings(
-            companyName = "Lemonade",
+            companyName = "Zillo",
             logoUrl = null,
             backgroundColor = "#DC2626",
             textColor = "#FFFFFF",

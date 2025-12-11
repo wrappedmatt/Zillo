@@ -16,9 +16,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.lemonade.terminal.loyalty.fragment.PairingFragment
-import com.lemonade.terminal.loyalty.service.BrandingService
-import com.lemonade.terminal.loyalty.storage.SecureStorage
+import com.zillo.terminal.loyalty.fragment.PairingFragment
+import com.zillo.terminal.loyalty.service.BrandingService
+import com.zillo.terminal.loyalty.storage.SecureStorage
 import com.stripe.aod.sampleapp.R
 import kotlinx.coroutines.launch
 import com.stripe.aod.sampleapp.listener.TerminalEventListener

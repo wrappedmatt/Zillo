@@ -27,7 +27,7 @@ class RedemptionFragment : Fragment(R.layout.fragment_redemption) {
         val viewBinding = FragmentRedemptionBinding.bind(view)
 
         // Get branding settings
-        val branding = com.lemonade.terminal.loyalty.service.BrandingService.getCurrentBranding()
+        val branding = com.zillo.terminal.loyalty.service.BrandingService.getCurrentBranding()
 
         // Apply branding
         applyBranding(viewBinding, branding)
@@ -223,14 +223,14 @@ class RedemptionFragment : Fragment(R.layout.fragment_redemption) {
         }
     }
 
-    private fun applyBranding(viewBinding: FragmentRedemptionBinding, branding: com.lemonade.terminal.loyalty.data.BrandingSettings) {
+    private fun applyBranding(viewBinding: FragmentRedemptionBinding, branding: com.zillo.terminal.loyalty.data.BrandingSettings) {
         // Apply background color
         viewBinding.root.setBackgroundColor(
-            com.lemonade.terminal.loyalty.service.BrandingService.parseColor(branding.backgroundColor)
+            com.zillo.terminal.loyalty.service.BrandingService.parseColor(branding.backgroundColor)
         )
 
         // Apply text colors
-        val textColor = com.lemonade.terminal.loyalty.service.BrandingService.parseColor(branding.textColor)
+        val textColor = com.zillo.terminal.loyalty.service.BrandingService.parseColor(branding.textColor)
 
         viewBinding.headline.setTextColor(textColor)
 
@@ -247,8 +247,8 @@ class RedemptionFragment : Fragment(R.layout.fragment_redemption) {
         viewBinding.creditAvailable.setTextColor(textColor)
 
         // Apply button colors
-        val buttonColor = com.lemonade.terminal.loyalty.service.BrandingService.parseColor(branding.buttonColor)
-        val buttonTextColor = com.lemonade.terminal.loyalty.service.BrandingService.parseColor(branding.buttonTextColor)
+        val buttonColor = com.zillo.terminal.loyalty.service.BrandingService.parseColor(branding.buttonColor)
+        val buttonTextColor = com.zillo.terminal.loyalty.service.BrandingService.parseColor(branding.buttonTextColor)
 
         viewBinding.redeemButton.apply {
             setTextColor(buttonTextColor)

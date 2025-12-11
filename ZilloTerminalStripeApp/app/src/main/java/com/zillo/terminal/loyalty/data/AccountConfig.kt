@@ -1,4 +1,4 @@
-package com.lemonade.terminal.loyalty.data
+package com.zillo.terminal.loyalty.data
 
 import com.google.gson.annotations.SerializedName
 
@@ -34,7 +34,7 @@ data class AccountConfig(
          */
         fun default() = AccountConfig(
             id = "",
-            companyName = "Lemonade",
+            companyName = "Zillo",
             loyaltySystemType = "cashback",
             cashbackRate = 5.0,
             pointsRate = 1.0,

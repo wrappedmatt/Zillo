@@ -1,4 +1,4 @@
-package com.lemonade.terminal.loyalty.data
+package com.zillo.terminal.loyalty.data
 
 import com.google.gson.annotations.SerializedName
 

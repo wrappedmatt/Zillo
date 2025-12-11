@@ -45,17 +45,33 @@ public class TerminalController : ControllerBase
 
     /// <summary>
     /// Generate a connection token for Stripe Terminal SDK
+    /// Requires terminal authentication via X-Terminal-API-Key header
     /// </summary>
     [HttpPost("connection-token")]
     public async Task<IActionResult> CreateConnectionToken()
     {
         try
         {
+            // Get authenticated terminal info from HttpContext.Items (set by middleware)
+            var accountId = (Guid)HttpContext.Items["AccountId"]!;
+            var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
+
+            // Get account for Stripe Connect
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                return NotFound(new { error = "Account not found" });
+
+            if (string.IsNullOrEmpty(account.StripeAccountId) || !account.StripeChargesEnabled)
+                return BadRequest(new { error = "Stripe Connect not configured or charges not enabled for this account" });
+
+            // Create connection token scoped to the connected account
+            var requestOptions = new RequestOptions { StripeAccount = account.StripeAccountId };
             var options = new ConnectionTokenCreateOptions();
             var service = new ConnectionTokenService();
-            var connectionToken = await service.CreateAsync(options);
+            var connectionToken = await service.CreateAsync(options, requestOptions);
 
-            _logger.LogInformation("Created connection token successfully");
+            _logger.LogInformation("Created connection token for terminal {TerminalId}, connected account {StripeAccountId}",
+                terminalId, account.StripeAccountId);
 
             return Ok(new { secret = connectionToken.Secret });
         }

@@ -48,6 +48,14 @@ public class Account
     public string WalletPassLabelColor { get; set; } = "#FFFFFF"; // Label text color on pass
     public string WalletPassForegroundColor { get; set; } = "#FFFFFF"; // Value text color on pass
 
+    // Stripe Connect Integration
+    public string? StripeAccountId { get; set; } // Stripe Connect account ID (acct_xxx)
+    public string StripeOnboardingStatus { get; set; } = "not_started"; // not_started, pending, complete, restricted
+    public bool StripeChargesEnabled { get; set; } = false; // Can accept payments
+    public bool StripePayoutsEnabled { get; set; } = false; // Can receive payouts
+    public DateTime? StripeAccountUpdatedAt { get; set; } // Last webhook update
+    public decimal PlatformFeePercentage { get; set; } = 0.00m; // Platform fee (0.00 = no fee)
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

@@ -53,10 +53,20 @@ public class PaymentsController : ControllerBase
             var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
             var terminalLabel = HttpContext.Items["TerminalLabel"]?.ToString() ?? "Unknown Terminal";
 
-            _logger.LogInformation("Creating payment intent for terminal {TerminalId} ({TerminalLabel}), amount: {Amount} {Currency}",
-                terminalId, terminalLabel, request.Amount, request.Currency);
+            // Get account and verify Stripe Connect is configured
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                return NotFound(new { error = "Account not found" });
 
-            // Create Stripe payment intent
+            if (string.IsNullOrEmpty(account.StripeAccountId) || !account.StripeChargesEnabled)
+                return BadRequest(new { error = "Stripe Connect not configured or charges not enabled for this account" });
+
+            var requestOptions = new RequestOptions { StripeAccount = account.StripeAccountId };
+
+            _logger.LogInformation("Creating payment intent for terminal {TerminalId} ({TerminalLabel}), amount: {Amount} {Currency}, connected account: {StripeAccountId}",
+                terminalId, terminalLabel, request.Amount, request.Currency, account.StripeAccountId);
+
+            // Create Stripe payment intent on connected account
             var options = new PaymentIntentCreateOptions
             {
                 Amount = request.Amount,
@@ -67,7 +77,7 @@ public class PaymentsController : ControllerBase
             };
 
             var service = new PaymentIntentService();
-            var paymentIntent = await service.CreateAsync(options);
+            var paymentIntent = await service.CreateAsync(options, requestOptions);
 
             _logger.LogInformation("Created payment intent: {PaymentIntentId}", paymentIntent.Id);
 
@@ -114,6 +124,19 @@ public class PaymentsController : ControllerBase
     {
         try
         {
+            // Get authenticated terminal info from HttpContext.Items (set by middleware)
+            var accountId = (Guid)HttpContext.Items["AccountId"]!;
+
+            // Get account for Stripe Connect
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                return NotFound(new { error = "Account not found" });
+
+            if (string.IsNullOrEmpty(account.StripeAccountId))
+                return BadRequest(new { error = "Stripe Connect not configured for this account" });
+
+            var requestOptions = new RequestOptions { StripeAccount = account.StripeAccountId };
+
             _logger.LogInformation("Updating payment intent {PaymentIntentId} with new amount: {Amount}", paymentIntentId, request.Amount);
 
             var options = new PaymentIntentUpdateOptions
@@ -122,7 +145,7 @@ public class PaymentsController : ControllerBase
             };
 
             var service = new PaymentIntentService();
-            var paymentIntent = await service.UpdateAsync(paymentIntentId, options);
+            var paymentIntent = await service.UpdateAsync(paymentIntentId, options, requestOptions);
 
             _logger.LogInformation("Updated payment intent: {PaymentIntentId}", paymentIntent.Id);
 
@@ -175,15 +198,25 @@ public class PaymentsController : ControllerBase
             var accountId = (Guid)HttpContext.Items["AccountId"]!;
             var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
 
+            // Get account for Stripe Connect
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                return NotFound(new { error = "Account not found" });
+
+            if (string.IsNullOrEmpty(account.StripeAccountId))
+                return BadRequest(new { error = "Stripe Connect not configured for this account" });
+
+            var requestOptions = new RequestOptions { StripeAccount = account.StripeAccountId };
+
             _logger.LogInformation("Capturing payment intent: {PaymentIntentId} for terminal {TerminalId}",
                 paymentIntentId, terminalId);
 
             var service = new PaymentIntentService();
-            var paymentIntent = await service.CaptureAsync(paymentIntentId);
+            var paymentIntent = await service.CaptureAsync(paymentIntentId, requestOptions: requestOptions);
 
             // Get the payment method to extract card fingerprint
             var paymentMethodService = new PaymentMethodService();
-            var paymentMethod = await paymentMethodService.GetAsync(paymentIntent.PaymentMethodId);
+            var paymentMethod = await paymentMethodService.GetAsync(paymentIntent.PaymentMethodId, requestOptions: requestOptions);
 
             // For card_present payments, use CardPresent property instead of Card
             var cardFingerprint = paymentMethod?.CardPresent?.Fingerprint ?? paymentMethod?.Card?.Fingerprint;
@@ -191,9 +224,6 @@ public class PaymentsController : ControllerBase
             var cardBrand = paymentMethod?.CardPresent?.Brand ?? paymentMethod?.Card?.Brand;
             var cardExpMonth = paymentMethod?.CardPresent?.ExpMonth ?? paymentMethod?.Card?.ExpMonth;
             var cardExpYear = paymentMethod?.CardPresent?.ExpYear ?? paymentMethod?.Card?.ExpYear;
-
-            // Get account to check loyalty system type
-            var account = await _accountRepository.GetByIdAsync(accountId);
             int points = 0;
             long cashbackAmountCents = 0;
 
@@ -366,6 +396,16 @@ public class PaymentsController : ControllerBase
             var accountId = (Guid)HttpContext.Items["AccountId"]!;
             var terminalId = (Guid)HttpContext.Items["TerminalId"]!;
 
+            // Get account for Stripe Connect
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                return NotFound(new { error = "Account not found" });
+
+            if (string.IsNullOrEmpty(account.StripeAccountId))
+                return BadRequest(new { error = "Stripe Connect not configured for this account" });
+
+            var requestOptions = new RequestOptions { StripeAccount = account.StripeAccountId };
+
             _logger.LogInformation("Capturing payment {PaymentIntentId} with redemption on terminal {TerminalId}. Amount: {Amount}, Credit: {Credit}",
                 paymentIntentId, terminalId, request.AmountToCapture, request.CreditRedeemed);
 
@@ -374,16 +414,15 @@ public class PaymentsController : ControllerBase
             {
                 AmountToCapture = request.AmountToCapture
             };
-            var paymentIntent = await service.CaptureAsync(paymentIntentId, options);
+            var paymentIntent = await service.CaptureAsync(paymentIntentId, options, requestOptions);
 
             var payment = await _paymentService.GetPaymentByStripePaymentIntentIdAsync(paymentIntentId);
 
             if (Guid.TryParse(request.CustomerId, out var customerGuid))
             {
                 var customer = await _customerService.GetCustomerByIdAsync(customerGuid, accountId);
-                var account = await _accountRepository.GetByIdAsync(accountId);
 
-                if (customer != null && payment != null && account != null)
+                if (customer != null && payment != null)
                 {
                     // Create redemption transaction if credit was redeemed
                     if (request.CreditRedeemed > 0)
@@ -502,11 +541,24 @@ public class PaymentsController : ControllerBase
     {
         try
         {
+            // Get authenticated terminal info from HttpContext.Items (set by middleware)
+            var accountId = (Guid)HttpContext.Items["AccountId"]!;
+
+            // Get account for Stripe Connect
+            var account = await _accountRepository.GetByIdAsync(accountId);
+            if (account == null)
+                return NotFound(new { error = "Account not found" });
+
+            if (string.IsNullOrEmpty(account.StripeAccountId))
+                return BadRequest(new { error = "Stripe Connect not configured for this account" });
+
+            var requestOptions = new RequestOptions { StripeAccount = account.StripeAccountId };
+
             _logger.LogInformation("Applying redemption of {Credit} cents to payment intent {PaymentIntentId} for customer {CustomerId}",
                 request.CreditToRedeem, paymentIntentId, request.CustomerId);
 
             var service = new PaymentIntentService();
-            var paymentIntent = await service.GetAsync(paymentIntentId);
+            var paymentIntent = await service.GetAsync(paymentIntentId, requestOptions: requestOptions);
 
             var newAmount = paymentIntent.Amount - request.CreditToRedeem;
             if (newAmount < 0) newAmount = 0;
@@ -516,7 +568,7 @@ public class PaymentsController : ControllerBase
                 Amount = newAmount
             };
 
-            paymentIntent = await service.UpdateAsync(paymentIntentId, options);
+            paymentIntent = await service.UpdateAsync(paymentIntentId, options, requestOptions);
 
             // Update payment record with loyalty redemption
             var payment = await _paymentService.GetPaymentByStripePaymentIntentIdAsync(paymentIntentId);

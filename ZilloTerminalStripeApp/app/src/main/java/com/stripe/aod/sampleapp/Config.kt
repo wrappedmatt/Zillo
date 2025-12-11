@@ -1,11 +1,11 @@
 package com.stripe.aod.sampleapp
 
 /**
- * Configuration object for the Lemonade Terminal App
+ * Configuration object for the Zillo Terminal App
  * Includes loyalty system settings fetched from the backend
  */
 object Config {
-    const val TAG = "LemonadeTerminalApp"
+    const val TAG = "ZilloTerminalApp"
 
     // Loyalty system configuration (fetched from API)
     var loyaltySystemType: String = "cashback" // "points" or "cashback"

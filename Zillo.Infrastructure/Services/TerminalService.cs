@@ -22,8 +22,8 @@ public class TerminalService : ITerminalService
 
     public async Task<GeneratePairingCodeResponse> GeneratePairingCodeAsync(Guid accountId, string? terminalLabel = null)
     {
-        // Generate pairing code
-        var pairingCode = GeneratePairingCode();
+        // Generate unique pairing code (ensure uniqueness across all accounts)
+        var pairingCode = await GenerateUniquePairingCodeAsync();
         var expiresAt = DateTime.UtcNow.AddMinutes(PAIRING_CODE_EXPIRY_MINUTES);
 
         // Create pending terminal record
@@ -237,12 +237,36 @@ public class TerminalService : ITerminalService
         );
     }
 
+    private async Task<string> GenerateUniquePairingCodeAsync()
+    {
+        const int maxAttempts = 10;
+
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            var code = GeneratePairingCode();
+
+            // Check if this code already exists (across all accounts)
+            var existingTerminal = await _terminalRepository.GetByPairingCodeAsync(code);
+            if (existingTerminal == null)
+            {
+                return code;
+            }
+        }
+
+        // If we've exhausted attempts, throw an exception
+        throw new InvalidOperationException("Unable to generate a unique pairing code. Please try again.");
+    }
+
     private static string GeneratePairingCode()
     {
-        // Generate 6-digit numeric code
-        var random = new Random();
-        var code = random.Next(0, 1000000).ToString("D6");
-        return code;
+        // Generate 6-digit numeric code using cryptographically secure random
+        var randomBytes = new byte[4];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+        }
+        var randomNumber = BitConverter.ToUInt32(randomBytes, 0) % 1000000;
+        return randomNumber.ToString("D6");
     }
 
     private static string GenerateApiKey()

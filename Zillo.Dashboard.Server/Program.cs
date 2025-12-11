@@ -52,6 +52,7 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITerminalService, TerminalService>();
+builder.Services.AddScoped<IStripeConnectService, StripeConnectService>();
 
 // Add HttpClient factory for geocoding and other HTTP calls
 builder.Services.AddHttpClient();
