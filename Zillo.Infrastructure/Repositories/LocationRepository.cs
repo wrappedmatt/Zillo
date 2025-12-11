@@ -90,17 +90,35 @@ public class LocationModel : Postgrest.Models.BaseModel
     [Postgrest.Attributes.Column("name")]
     public string Name { get; set; } = string.Empty;
 
-    [Postgrest.Attributes.Column("address")]
-    public string? Address { get; set; }
+    [Postgrest.Attributes.Column("address_line1")]
+    public string? AddressLine1 { get; set; }
+
+    [Postgrest.Attributes.Column("address_line2")]
+    public string? AddressLine2 { get; set; }
+
+    [Postgrest.Attributes.Column("city")]
+    public string? City { get; set; }
+
+    [Postgrest.Attributes.Column("state")]
+    public string? State { get; set; }
+
+    [Postgrest.Attributes.Column("postal_code")]
+    public string? PostalCode { get; set; }
+
+    [Postgrest.Attributes.Column("country")]
+    public string Country { get; set; } = "US";
 
     [Postgrest.Attributes.Column("latitude")]
-    public double Latitude { get; set; }
+    public double? Latitude { get; set; }
 
     [Postgrest.Attributes.Column("longitude")]
-    public double Longitude { get; set; }
+    public double? Longitude { get; set; }
 
     [Postgrest.Attributes.Column("relevant_distance")]
     public double? RelevantDistance { get; set; }
+
+    [Postgrest.Attributes.Column("stripe_terminal_location_id")]
+    public string? StripeTerminalLocationId { get; set; }
 
     [Postgrest.Attributes.Column("is_active")]
     public bool IsActive { get; set; } = true;
@@ -116,10 +134,16 @@ public class LocationModel : Postgrest.Models.BaseModel
         Id = Id,
         AccountId = AccountId,
         Name = Name,
-        Address = Address,
+        AddressLine1 = AddressLine1,
+        AddressLine2 = AddressLine2,
+        City = City,
+        State = State,
+        PostalCode = PostalCode,
+        Country = Country,
         Latitude = Latitude,
         Longitude = Longitude,
         RelevantDistance = RelevantDistance,
+        StripeTerminalLocationId = StripeTerminalLocationId,
         IsActive = IsActive,
         CreatedAt = CreatedAt,
         UpdatedAt = UpdatedAt
@@ -130,10 +154,16 @@ public class LocationModel : Postgrest.Models.BaseModel
         Id = location.Id,
         AccountId = location.AccountId,
         Name = location.Name,
-        Address = location.Address,
+        AddressLine1 = location.AddressLine1,
+        AddressLine2 = location.AddressLine2,
+        City = location.City,
+        State = location.State,
+        PostalCode = location.PostalCode,
+        Country = location.Country,
         Latitude = location.Latitude,
         Longitude = location.Longitude,
         RelevantDistance = location.RelevantDistance,
+        StripeTerminalLocationId = location.StripeTerminalLocationId,
         IsActive = location.IsActive,
         CreatedAt = location.CreatedAt,
         UpdatedAt = location.UpdatedAt

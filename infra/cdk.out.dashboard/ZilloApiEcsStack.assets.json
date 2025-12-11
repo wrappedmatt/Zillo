@@ -1,0 +1,21 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "63eae699beaf92eaffe067aa0a924aec11e542c40f64a24be1264fae0300fcb6": {
+      "displayName": "ZilloApiEcsStack Template",
+      "source": {
+        "path": "ZilloApiEcsStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "711801600585-us-east-1-3f4136fb": {
+          "bucketName": "cdk-hnb659fds-assets-711801600585-us-east-1",
+          "objectKey": "63eae699beaf92eaffe067aa0a924aec11e542c40f64a24be1264fae0300fcb6.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::711801600585:role/cdk-hnb659fds-file-publishing-role-711801600585-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

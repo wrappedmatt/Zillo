@@ -1,0 +1,279 @@
+{
+ "Resources": {
+  "ApiRepositoryB8378B43": {
+   "Type": "AWS::ECR::Repository",
+   "Properties": {
+    "LifecyclePolicy": {
+     "LifecyclePolicyText": "{\"rules\":[{\"rulePriority\":1,\"description\":\"Keep only 10 images\",\"selection\":{\"tagStatus\":\"any\",\"countType\":\"imageCountMoreThan\",\"countNumber\":10},\"action\":{\"type\":\"expire\"}}]}"
+    },
+    "RepositoryName": "zillo-api"
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiStack/ApiRepository/Resource"
+   }
+  },
+  "GitHubActionsRolePolicy090A4307": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:CompleteLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ApiRepositoryB8378B43",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "GitHubActionsRolePolicy090A4307",
+    "Roles": [
+     "Zillo-GitHubActions-Role"
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiStack/GitHubActionsRole/Policy/Resource"
+   }
+  },
+  "AppRunnerAccessRoleC89E5843": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "build.apprunner.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "RoleName": "Zillo-API-AppRunner-ECR-Access-Role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiStack/AppRunnerAccessRole/Resource"
+   }
+  },
+  "AppRunnerAccessRoleDefaultPolicy4FF2CFAF": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ApiRepositoryB8378B43",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AppRunnerAccessRoleDefaultPolicy4FF2CFAF",
+    "Roles": [
+     {
+      "Ref": "AppRunnerAccessRoleC89E5843"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiStack/AppRunnerAccessRole/DefaultPolicy/Resource"
+   }
+  },
+  "AppRunnerInstanceRole96A5A063": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "tasks.apprunner.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "RoleName": "Zillo-API-AppRunner-Instance-Role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiStack/AppRunnerInstanceRole/Resource"
+   }
+  },
+  "AppRunnerInstanceRoleDefaultPolicy35195718": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":secretsmanager:us-east-1:711801600585:secret:Zillo/dashboard-??????"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AppRunnerInstanceRoleDefaultPolicy35195718",
+    "Roles": [
+     {
+      "Ref": "AppRunnerInstanceRole96A5A063"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiStack/AppRunnerInstanceRole/DefaultPolicy/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/0WKUQ7CIBBEz9J/ulqMJ/AAGjxAg3RNtqVsw4KNIdzdBE38mnnzRoM+aRg6u0vvpqX39IByT9Ytyu4yFnQRisGNhRLHt7o8w5+qIrtCubEn19SvGfbYnuyxVmVQOEfXpmtOW05VBZ4QZjm8tIbhDMduFqI+5pBoRTDf/ADRnx5inQAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ECRRepositoryUri": {
+   "Description": "ECR Repository URI for API",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Fn::Select": [
+        4,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "ApiRepositoryB8378B43",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".dkr.ecr.",
+      {
+       "Fn::Select": [
+        3,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "ApiRepositoryB8378B43",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ApiRepositoryB8378B43"
+      }
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "Zillo-API-ECR-URI"
+   }
+  },
+  "NextSteps": {
+   "Description": "Setup instructions",
+   "Value": "\nPhase 1 complete! Now:\n1. Push first Docker image via GitHub Actions\n2. Set deployAppRunner: true and run cdk deploy again\n"
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

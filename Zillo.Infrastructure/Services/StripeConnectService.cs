@@ -200,4 +200,30 @@ public class StripeConnectService : IStripeConnectService
 
         return !string.IsNullOrEmpty(account.StripeAccountId) && account.StripeChargesEnabled;
     }
+
+    public async Task HandleAccountDeauthorizedAsync(string stripeAccountId)
+    {
+        _logger.LogWarning(
+            "Handling deauthorization for Stripe account {StripeAccountId}",
+            stripeAccountId);
+
+        var account = await _accountRepository.GetByStripeAccountIdAsync(stripeAccountId);
+        if (account == null)
+        {
+            _logger.LogWarning("Account not found for Stripe account {StripeAccountId}", stripeAccountId);
+            return;
+        }
+
+        // Mark account as deauthorized - keep the ID for reference but disable capabilities
+        account.StripeOnboardingStatus = "deauthorized";
+        account.StripeChargesEnabled = false;
+        account.StripePayoutsEnabled = false;
+        account.StripeAccountUpdatedAt = DateTime.UtcNow;
+
+        await _accountRepository.UpdateAsync(account);
+
+        _logger.LogWarning(
+            "Account {AccountId} marked as deauthorized - Stripe account disconnected",
+            account.Id);
+    }
 }

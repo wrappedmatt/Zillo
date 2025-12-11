@@ -54,4 +54,10 @@ public interface IStripeConnectService
     /// <param name="accountId">The Zillo account ID</param>
     /// <returns>True if the account can accept payments</returns>
     Task<bool> CanAcceptPaymentsAsync(Guid accountId);
+
+    /// <summary>
+    /// Handle account deauthorization (disconnect from platform)
+    /// </summary>
+    /// <param name="stripeAccountId">The Stripe account ID</param>
+    Task HandleAccountDeauthorizedAsync(string stripeAccountId);
 }

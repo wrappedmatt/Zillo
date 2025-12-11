@@ -1,0 +1,564 @@
+{
+ "Resources": {
+  "GitHubOIDCProvider4F328116": {
+   "Type": "Custom::AWSCDKOpenIdConnectProvider",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomAWSCDKOpenIdConnectProviderCustomResourceProviderHandlerF2C543E0",
+      "Arn"
+     ]
+    },
+    "ClientIDList": [
+     "sts.amazonaws.com"
+    ],
+    "ThumbprintList": [
+     "6938fd4d98bab03faadb97b34396831e3780aea1",
+     "1c58a3a8518e8759bf075b76b750d4f2df264fcd"
+    ],
+    "Url": "https://token.actions.githubusercontent.com",
+    "RejectUnauthorized": false,
+    "CodeHash": "62fa02efcaa700e1c247e1d3cc2aa0cd07a0808a9a3e3d2230e51f57a02233fb"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/GitHubOIDCProvider/Resource/Default"
+   }
+  },
+  "CustomAWSCDKOpenIdConnectProviderCustomResourceProviderRole517FED65": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ],
+    "Policies": [
+     {
+      "PolicyName": "Inline",
+      "PolicyDocument": {
+       "Version": "2012-10-17",
+       "Statement": [
+        {
+         "Effect": "Allow",
+         "Resource": "*",
+         "Action": [
+          "iam:CreateOpenIDConnectProvider",
+          "iam:DeleteOpenIDConnectProvider",
+          "iam:UpdateOpenIDConnectProviderThumbprint",
+          "iam:AddClientIDToOpenIDConnectProvider",
+          "iam:RemoveClientIDFromOpenIDConnectProvider"
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider/Role"
+   }
+  },
+  "CustomAWSCDKOpenIdConnectProviderCustomResourceProviderHandlerF2C543E0": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-711801600585-us-east-1",
+     "S3Key": "62fa02efcaa700e1c247e1d3cc2aa0cd07a0808a9a3e3d2230e51f57a02233fb.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "__entrypoint__.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomAWSCDKOpenIdConnectProviderCustomResourceProviderRole517FED65",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs22.x"
+   },
+   "DependsOn": [
+    "CustomAWSCDKOpenIdConnectProviderCustomResourceProviderRole517FED65"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.62fa02efcaa700e1c247e1d3cc2aa0cd07a0808a9a3e3d2230e51f57a02233fb",
+    "aws:asset:property": "Code"
+   }
+  },
+  "GitHubActionsRole4F1BBA26": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRoleWithWebIdentity",
+       "Condition": {
+        "StringEquals": {
+         "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+         "token.actions.githubusercontent.com:sub": "repo:wrappedmatt/Zillo:*"
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Federated": {
+         "Ref": "GitHubOIDCProvider4F328116"
+        }
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "RoleName": "Zillo-GitHubActions-Role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/GitHubActionsRole/Resource"
+   }
+  },
+  "GitHubActionsRoleDefaultPolicy69DA0189": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:CompleteLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":ecr:us-east-1:711801600585:repository/zillo-dashboard"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:PutImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:ecr:us-east-1:711801600585:repository/zillo-*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "GitHubActionsRoleDefaultPolicy69DA0189",
+    "Roles": [
+     {
+      "Ref": "GitHubActionsRole4F1BBA26"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/GitHubActionsRole/DefaultPolicy/Resource"
+   }
+  },
+  "DashboardSecrets3F4FEBBC": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "Dashboard application secrets (Supabase, Stripe, etc.)",
+    "GenerateSecretString": {
+     "GenerateStringKey": "dummy",
+     "SecretStringTemplate": "{\"Supabase__Url\":\"REPLACE_ME\",\"Supabase__Key\":\"REPLACE_ME\",\"Stripe__SecretKey\":\"REPLACE_ME\",\"Stripe__PublishableKey\":\"REPLACE_ME\",\"Google__MapsApiKey\":\"\",\"Wallet__Apple__CertificatePassword\":\"REPLACE_ME\",\"Wallet__WebServiceUrl\":\"https://dashboard.zillo.app\"}"
+    },
+    "Name": "Zillo/dashboard"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/DashboardSecrets/Resource"
+   }
+  },
+  "AppleP12Secret569F51E5": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "Apple Wallet P12 certificate (base64 encoded)",
+    "GenerateSecretString": {},
+    "Name": "Zillo/certs/apple-p12"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/AppleP12Secret/Resource"
+   }
+  },
+  "GoogleKeySecret6F69032C": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "Google Wallet service account key JSON",
+    "GenerateSecretString": {},
+    "Name": "Zillo/certs/google-key"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/GoogleKeySecret/Resource"
+   }
+  },
+  "AppRunnerInstanceRole96A5A063": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "tasks.apprunner.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "RoleName": "Zillo-AppRunner-Instance-Role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/AppRunnerInstanceRole/Resource"
+   }
+  },
+  "AppRunnerInstanceRoleDefaultPolicy35195718": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "DashboardSecrets3F4FEBBC"
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "AppleP12Secret569F51E5"
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "GoogleKeySecret6F69032C"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AppRunnerInstanceRoleDefaultPolicy35195718",
+    "Roles": [
+     {
+      "Ref": "AppRunnerInstanceRole96A5A063"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/AppRunnerInstanceRole/DefaultPolicy/Resource"
+   }
+  },
+  "AppRunnerAccessRoleC89E5843": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "build.apprunner.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "RoleName": "Zillo-AppRunner-ECR-Access-Role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/AppRunnerAccessRole/Resource"
+   }
+  },
+  "AppRunnerAccessRoleDefaultPolicy4FF2CFAF": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":ecr:us-east-1:711801600585:repository/zillo-dashboard"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AppRunnerAccessRoleDefaultPolicy4FF2CFAF",
+    "Roles": [
+     {
+      "Ref": "AppRunnerAccessRoleC89E5843"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/AppRunnerAccessRole/DefaultPolicy/Resource"
+   }
+  },
+  "DashboardService": {
+   "Type": "AWS::AppRunner::Service",
+   "Properties": {
+    "HealthCheckConfiguration": {
+     "HealthyThreshold": 1,
+     "Interval": 10,
+     "Path": "/api/health",
+     "Protocol": "HTTP",
+     "Timeout": 5,
+     "UnhealthyThreshold": 5
+    },
+    "InstanceConfiguration": {
+     "Cpu": "1024",
+     "InstanceRoleArn": {
+      "Fn::GetAtt": [
+       "AppRunnerInstanceRole96A5A063",
+       "Arn"
+      ]
+     },
+     "Memory": "2048"
+    },
+    "ServiceName": "Zillo-dashboard",
+    "SourceConfiguration": {
+     "AuthenticationConfiguration": {
+      "AccessRoleArn": {
+       "Fn::GetAtt": [
+        "AppRunnerAccessRoleC89E5843",
+        "Arn"
+       ]
+      }
+     },
+     "AutoDeploymentsEnabled": true,
+     "ImageRepository": {
+      "ImageConfiguration": {
+       "Port": "8080",
+       "RuntimeEnvironmentSecrets": [
+        {
+         "Name": "APP_SECRETS_ARN",
+         "Value": {
+          "Ref": "DashboardSecrets3F4FEBBC"
+         }
+        },
+        {
+         "Name": "APPLE_P12_SECRET_ARN",
+         "Value": {
+          "Ref": "AppleP12Secret569F51E5"
+         }
+        },
+        {
+         "Name": "GOOGLE_KEY_SECRET_ARN",
+         "Value": {
+          "Ref": "GoogleKeySecret6F69032C"
+         }
+        }
+       ],
+       "RuntimeEnvironmentVariables": [
+        {
+         "Name": "ASPNETCORE_ENVIRONMENT",
+         "Value": "Production"
+        },
+        {
+         "Name": "AWS_REGION",
+         "Value": "us-east-1"
+        }
+       ]
+      },
+      "ImageIdentifier": {
+       "Fn::Join": [
+        "",
+        [
+         "711801600585.dkr.ecr.us-east-1.",
+         {
+          "Ref": "AWS::URLSuffix"
+         },
+         "/zillo-dashboard:latest"
+        ]
+       ]
+      },
+      "ImageRepositoryType": "ECR"
+     }
+    }
+   },
+   "DependsOn": [
+    "AppRunnerAccessRoleDefaultPolicy4FF2CFAF",
+    "AppRunnerAccessRoleC89E5843"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/DashboardService"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOS27DMAxEz5K9zDYqcoDWq64S2AcIVJk1mNiUQFIOAsN3D2KjRbuaN/xgxoN/87DfhZtWsbtWA33B3FqIVxduep4xCjSYk5IluX8ERUdhhPmYkT+7OjFjtJOkiToU16QBXf3Nq57SQPH+tBstTjEKmo6BQ48Cc7v658VGiws5S2FGgXUoE0VcXF3U0tigpiJxC/jlf6ufImvPd1W01kJP3Lu/z8diudjiOHUIF32ZvIf9AV53FyWqpLDRiNBs+gAKWqpuIQEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloDashboardStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ECRRepositoryUri": {
+   "Description": "ECR Repository URI",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "711801600585.dkr.ecr.us-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/zillo-dashboard"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "Zillo-ECR-URI"
+   }
+  },
+  "GitHubActionsRoleArn": {
+   "Description": "IAM Role ARN for GitHub Actions (add to repo secrets as AWS_ROLE_ARN)",
+   "Value": {
+    "Fn::GetAtt": [
+     "GitHubActionsRole4F1BBA26",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "Zillo-GitHub-Role-ARN"
+   }
+  },
+  "SecretsManagerArn": {
+   "Description": "Secrets Manager ARN - populate with actual values",
+   "Value": {
+    "Ref": "DashboardSecrets3F4FEBBC"
+   }
+  },
+  "AppRunnerServiceUrl": {
+   "Description": "App Runner Service URL",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Fn::GetAtt": [
+        "DashboardService",
+        "ServiceUrl"
+       ]
+      }
+     ]
+    ]
+   }
+  },
+  "NextSteps": {
+   "Description": "Setup instructions",
+   "Value": "\n1. Add custom domain in App Runner console: dashboard.zillo.app\n2. Add Route 53 CNAME record for the custom domain\n"
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

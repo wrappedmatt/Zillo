@@ -1,0 +1,36 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "62fa02efcaa700e1c247e1d3cc2aa0cd07a0808a9a3e3d2230e51f57a02233fb": {
+      "displayName": "ZilloDashboardStack/Custom::AWSCDKOpenIdConnectProviderCustomResourceProvider Code",
+      "source": {
+        "path": "asset.62fa02efcaa700e1c247e1d3cc2aa0cd07a0808a9a3e3d2230e51f57a02233fb",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "711801600585-us-east-1-5232e421": {
+          "bucketName": "cdk-hnb659fds-assets-711801600585-us-east-1",
+          "objectKey": "62fa02efcaa700e1c247e1d3cc2aa0cd07a0808a9a3e3d2230e51f57a02233fb.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::711801600585:role/cdk-hnb659fds-file-publishing-role-711801600585-us-east-1"
+        }
+      }
+    },
+    "4e673259b87ff427e63d69ebe8ce7a7f6a023938a4db402ebb279453809d5312": {
+      "displayName": "ZilloDashboardStack Template",
+      "source": {
+        "path": "ZilloDashboardStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "711801600585-us-east-1-17253e46": {
+          "bucketName": "cdk-hnb659fds-assets-711801600585-us-east-1",
+          "objectKey": "4e673259b87ff427e63d69ebe8ce7a7f6a023938a4db402ebb279453809d5312.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::711801600585:role/cdk-hnb659fds-file-publishing-role-711801600585-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

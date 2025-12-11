@@ -48,6 +48,31 @@ public class StripeWebhooksController : ControllerBase
                     await HandleAccountUpdated(stripeEvent);
                     break;
 
+                case "account.external_account.created":
+                    await HandleExternalAccountCreated(stripeEvent);
+                    break;
+
+                case "account.external_account.updated":
+                    await HandleExternalAccountUpdated(stripeEvent);
+                    break;
+
+                case "account.external_account.deleted":
+                    await HandleExternalAccountDeleted(stripeEvent);
+                    break;
+
+                case "capability.updated":
+                    await HandleCapabilityUpdated(stripeEvent);
+                    break;
+
+                case "account.application.deauthorized":
+                    await HandleAccountDeauthorized(stripeEvent);
+                    break;
+
+                case "person.created":
+                case "person.updated":
+                    await HandlePersonUpdated(stripeEvent);
+                    break;
+
                 default:
                     _logger.LogInformation("Unhandled event type: {EventType}", stripeEvent.Type);
                     break;
@@ -85,5 +110,106 @@ public class StripeWebhooksController : ControllerBase
             account.ChargesEnabled,
             account.PayoutsEnabled
         );
+    }
+
+    private async Task HandleExternalAccountCreated(Event stripeEvent)
+    {
+        var externalAccount = stripeEvent.Data.Object as Stripe.BankAccount;
+        if (externalAccount == null)
+        {
+            _logger.LogWarning("Could not deserialize external_account from webhook event");
+            return;
+        }
+
+        _logger.LogInformation(
+            "Bank account created for account {AccountId}: {BankName} ending in {Last4}",
+            externalAccount.Account, externalAccount.BankName, externalAccount.Last4);
+
+        // Optional: Store bank account info if needed
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleExternalAccountUpdated(Event stripeEvent)
+    {
+        var externalAccount = stripeEvent.Data.Object as Stripe.BankAccount;
+        if (externalAccount == null)
+        {
+            _logger.LogWarning("Could not deserialize external_account from webhook event");
+            return;
+        }
+
+        _logger.LogInformation(
+            "Bank account updated for account {AccountId}: {BankName} ending in {Last4}",
+            externalAccount.Account, externalAccount.BankName, externalAccount.Last4);
+
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleExternalAccountDeleted(Event stripeEvent)
+    {
+        var externalAccount = stripeEvent.Data.Object as Stripe.BankAccount;
+        if (externalAccount == null)
+        {
+            _logger.LogWarning("Could not deserialize external_account from webhook event");
+            return;
+        }
+
+        _logger.LogInformation(
+            "Bank account deleted for account {AccountId}: {BankName} ending in {Last4}",
+            externalAccount.Account, externalAccount.BankName, externalAccount.Last4);
+
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleCapabilityUpdated(Event stripeEvent)
+    {
+        var capability = stripeEvent.Data.Object as Capability;
+        if (capability == null)
+        {
+            _logger.LogWarning("Could not deserialize capability from webhook event");
+            return;
+        }
+
+        _logger.LogInformation(
+            "Capability {CapabilityId} updated for account {AccountId}: status={Status}",
+            capability.Id, capability.Account, capability.Status);
+
+        // Capability status changes might affect charges_enabled/payouts_enabled
+        // The account.updated event will handle the actual status update
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleAccountDeauthorized(Event stripeEvent)
+    {
+        var account = stripeEvent.Data.Object as Account;
+        if (account == null)
+        {
+            _logger.LogWarning("Could not deserialize account from webhook event");
+            return;
+        }
+
+        _logger.LogWarning(
+            "Account {AccountId} deauthorized - disconnected from platform",
+            account.Id);
+
+        // Mark account as disconnected
+        await _stripeConnectService.HandleAccountDeauthorizedAsync(account.Id);
+    }
+
+    private async Task HandlePersonUpdated(Event stripeEvent)
+    {
+        var person = stripeEvent.Data.Object as Person;
+        if (person == null)
+        {
+            _logger.LogWarning("Could not deserialize person from webhook event");
+            return;
+        }
+
+        _logger.LogInformation(
+            "Person {PersonId} {EventType} for account {AccountId}",
+            person.Id, stripeEvent.Type, person.Account);
+
+        // Optional: Track person verification status if needed
+        await Task.CompletedTask;
     }
 }

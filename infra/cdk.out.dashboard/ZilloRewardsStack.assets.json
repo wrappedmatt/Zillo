@@ -1,0 +1,21 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "22f0524996bf61453dd714d5141582491c49f83945c29af69d8cd723bbe03202": {
+      "displayName": "ZilloRewardsStack Template",
+      "source": {
+        "path": "ZilloRewardsStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "711801600585-us-east-1-9aef5653": {
+          "bucketName": "cdk-hnb659fds-assets-711801600585-us-east-1",
+          "objectKey": "22f0524996bf61453dd714d5141582491c49f83945c29af69d8cd723bbe03202.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::711801600585:role/cdk-hnb659fds-file-publishing-role-711801600585-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

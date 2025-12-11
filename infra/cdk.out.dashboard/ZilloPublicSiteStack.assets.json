@@ -1,0 +1,21 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "47cd60d6da6f65d615d11850cc36a3ba76932e30148520c32259c57d735a3908": {
+      "displayName": "ZilloPublicSiteStack Template",
+      "source": {
+        "path": "ZilloPublicSiteStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "711801600585-us-east-1-701651e9": {
+          "bucketName": "cdk-hnb659fds-assets-711801600585-us-east-1",
+          "objectKey": "47cd60d6da6f65d615d11850cc36a3ba76932e30148520c32259c57d735a3908.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::711801600585:role/cdk-hnb659fds-file-publishing-role-711801600585-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

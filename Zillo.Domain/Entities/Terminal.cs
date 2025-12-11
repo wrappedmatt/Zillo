@@ -4,6 +4,7 @@ public class Terminal
 {
     public Guid Id { get; set; }
     public Guid AccountId { get; set; }
+    public Guid? LocationId { get; set; }
 
     // Authentication
     public string ApiKey { get; set; } = string.Empty;
@@ -29,4 +30,5 @@ public class Terminal
 
     // Navigation properties
     public Account Account { get; set; } = null!;
+    public Location? Location { get; set; }
 }

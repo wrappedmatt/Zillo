@@ -1,0 +1,949 @@
+{
+ "Resources": {
+  "ApiVpc5D2E523E": {
+   "Type": "AWS::EC2::VPC",
+   "Properties": {
+    "CidrBlock": "10.0.0.0/16",
+    "EnableDnsHostnames": true,
+    "EnableDnsSupport": true,
+    "InstanceTenancy": "default",
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "Zillo-API-VPC"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/Resource"
+   }
+  },
+  "ApiVpcPublicSubnet1SubnetFE6B0D1A": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "us-east-1a",
+    "CidrBlock": "10.0.0.0/24",
+    "MapPublicIpOnLaunch": true,
+    "Tags": [
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "Public"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Public"
+     },
+     {
+      "Key": "Name",
+      "Value": "ZilloApiEcsStack/ApiVpc/PublicSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet1/Subnet"
+   }
+  },
+  "ApiVpcPublicSubnet1RouteTableE5D53522": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "ZilloApiEcsStack/ApiVpc/PublicSubnet1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet1/RouteTable"
+   }
+  },
+  "ApiVpcPublicSubnet1RouteTableAssociationF3FC5734": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "ApiVpcPublicSubnet1RouteTableE5D53522"
+    },
+    "SubnetId": {
+     "Ref": "ApiVpcPublicSubnet1SubnetFE6B0D1A"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet1/RouteTableAssociation"
+   }
+  },
+  "ApiVpcPublicSubnet1DefaultRoute04DAEA41": {
+   "Type": "AWS::EC2::Route",
+   "Properties": {
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "GatewayId": {
+     "Ref": "ApiVpcIGW2C35E43F"
+    },
+    "RouteTableId": {
+     "Ref": "ApiVpcPublicSubnet1RouteTableE5D53522"
+    }
+   },
+   "DependsOn": [
+    "ApiVpcVPCGWDE96BD5C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet1/DefaultRoute"
+   }
+  },
+  "ApiVpcPublicSubnet2Subnet1D0D5E11": {
+   "Type": "AWS::EC2::Subnet",
+   "Properties": {
+    "AvailabilityZone": "us-east-1b",
+    "CidrBlock": "10.0.1.0/24",
+    "MapPublicIpOnLaunch": true,
+    "Tags": [
+     {
+      "Key": "aws-cdk:subnet-name",
+      "Value": "Public"
+     },
+     {
+      "Key": "aws-cdk:subnet-type",
+      "Value": "Public"
+     },
+     {
+      "Key": "Name",
+      "Value": "ZilloApiEcsStack/ApiVpc/PublicSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet2/Subnet"
+   }
+  },
+  "ApiVpcPublicSubnet2RouteTable53889EC3": {
+   "Type": "AWS::EC2::RouteTable",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "ZilloApiEcsStack/ApiVpc/PublicSubnet2"
+     }
+    ],
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet2/RouteTable"
+   }
+  },
+  "ApiVpcPublicSubnet2RouteTableAssociationE530FE2B": {
+   "Type": "AWS::EC2::SubnetRouteTableAssociation",
+   "Properties": {
+    "RouteTableId": {
+     "Ref": "ApiVpcPublicSubnet2RouteTable53889EC3"
+    },
+    "SubnetId": {
+     "Ref": "ApiVpcPublicSubnet2Subnet1D0D5E11"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet2/RouteTableAssociation"
+   }
+  },
+  "ApiVpcPublicSubnet2DefaultRouteACF417AB": {
+   "Type": "AWS::EC2::Route",
+   "Properties": {
+    "DestinationCidrBlock": "0.0.0.0/0",
+    "GatewayId": {
+     "Ref": "ApiVpcIGW2C35E43F"
+    },
+    "RouteTableId": {
+     "Ref": "ApiVpcPublicSubnet2RouteTable53889EC3"
+    }
+   },
+   "DependsOn": [
+    "ApiVpcVPCGWDE96BD5C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/PublicSubnet2/DefaultRoute"
+   }
+  },
+  "ApiVpcIGW2C35E43F": {
+   "Type": "AWS::EC2::InternetGateway",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "Zillo-API-VPC"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/IGW"
+   }
+  },
+  "ApiVpcVPCGWDE96BD5C": {
+   "Type": "AWS::EC2::VPCGatewayAttachment",
+   "Properties": {
+    "InternetGatewayId": {
+     "Ref": "ApiVpcIGW2C35E43F"
+    },
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiVpc/VPCGW"
+   }
+  },
+  "ApiCluster7CE9CBE6": {
+   "Type": "AWS::ECS::Cluster",
+   "Properties": {
+    "ClusterName": "Zillo-API-Cluster",
+    "ClusterSettings": [
+     {
+      "Name": "containerInsights",
+      "Value": "disabled"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiCluster/Resource"
+   }
+  },
+  "TaskExecutionRole250D2532": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+       ]
+      ]
+     }
+    ],
+    "RoleName": "Zillo-API-ECS-Execution-Role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/TaskExecutionRole/Resource"
+   }
+  },
+  "TaskExecutionRoleDefaultPolicyA84DD1B0": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":secretsmanager:us-east-1:711801600585:secret:Zillo/dashboard-??????"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":ecr:us-east-1:711801600585:repository/zillo-api"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ApiLogGroup1DEDFC07",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "TaskExecutionRoleDefaultPolicyA84DD1B0",
+    "Roles": [
+     {
+      "Ref": "TaskExecutionRole250D2532"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/TaskExecutionRole/DefaultPolicy/Resource"
+   }
+  },
+  "TaskRole30FC0FBB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "RoleName": "Zillo-API-ECS-Task-Role"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/TaskRole/Resource"
+   }
+  },
+  "TaskRoleDefaultPolicy07FC53DE": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":secretsmanager:us-east-1:711801600585:secret:Zillo/dashboard-??????"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "TaskRoleDefaultPolicy07FC53DE",
+    "Roles": [
+     {
+      "Ref": "TaskRole30FC0FBB"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/TaskRole/DefaultPolicy/Resource"
+   }
+  },
+  "ApiLogGroup1DEDFC07": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "LogGroupName": "/ecs/zillo-api",
+    "RetentionInDays": 7
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiLogGroup/Resource"
+   }
+  },
+  "ApiTaskDef37DBDBD0": {
+   "Type": "AWS::ECS::TaskDefinition",
+   "Properties": {
+    "ContainerDefinitions": [
+     {
+      "Environment": [
+       {
+        "Name": "ASPNETCORE_ENVIRONMENT",
+        "Value": "Production"
+       },
+       {
+        "Name": "ASPNETCORE_URLS",
+        "Value": "http://+:8080"
+       },
+       {
+        "Name": "AWS_REGION",
+        "Value": "us-east-1"
+       }
+      ],
+      "Essential": true,
+      "Image": {
+       "Fn::Join": [
+        "",
+        [
+         "711801600585.dkr.ecr.us-east-1.",
+         {
+          "Ref": "AWS::URLSuffix"
+         },
+         "/zillo-api:latest"
+        ]
+       ]
+      },
+      "LogConfiguration": {
+       "LogDriver": "awslogs",
+       "Options": {
+        "awslogs-group": {
+         "Ref": "ApiLogGroup1DEDFC07"
+        },
+        "awslogs-stream-prefix": "api",
+        "awslogs-region": "us-east-1"
+       }
+      },
+      "Name": "zillo-api",
+      "PortMappings": [
+       {
+        "ContainerPort": 8080,
+        "Protocol": "tcp"
+       }
+      ],
+      "Secrets": [
+       {
+        "Name": "APP_SECRETS_ARN",
+        "ValueFrom": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":secretsmanager:us-east-1:711801600585:secret:Zillo/dashboard"
+          ]
+         ]
+        }
+       }
+      ]
+     }
+    ],
+    "Cpu": "256",
+    "ExecutionRoleArn": {
+     "Fn::GetAtt": [
+      "TaskExecutionRole250D2532",
+      "Arn"
+     ]
+    },
+    "Family": "zillo-api",
+    "Memory": "512",
+    "NetworkMode": "awsvpc",
+    "RequiresCompatibilities": [
+     "FARGATE"
+    ],
+    "TaskRoleArn": {
+     "Fn::GetAtt": [
+      "TaskRole30FC0FBB",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiTaskDef/Resource"
+   }
+  },
+  "AlbSecurityGroup86A59E99": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "Security group for API ALB",
+    "GroupName": "Zillo-API-ALB-SG",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "SecurityGroupIngress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow HTTP",
+      "FromPort": 80,
+      "IpProtocol": "tcp",
+      "ToPort": 80
+     },
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow HTTPS",
+      "FromPort": 443,
+      "IpProtocol": "tcp",
+      "ToPort": 443
+     }
+    ],
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/AlbSecurityGroup/Resource"
+   }
+  },
+  "EcsSecurityGroup44008BF1": {
+   "Type": "AWS::EC2::SecurityGroup",
+   "Properties": {
+    "GroupDescription": "Security group for API ECS tasks",
+    "GroupName": "Zillo-API-ECS-SG",
+    "SecurityGroupEgress": [
+     {
+      "CidrIp": "0.0.0.0/0",
+      "Description": "Allow all outbound traffic by default",
+      "IpProtocol": "-1"
+     }
+    ],
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/EcsSecurityGroup/Resource"
+   }
+  },
+  "EcsSecurityGroupfromZilloApiEcsStackAlbSecurityGroup8D7D187A808098893F15": {
+   "Type": "AWS::EC2::SecurityGroupIngress",
+   "Properties": {
+    "Description": "Allow from ALB",
+    "FromPort": 8080,
+    "GroupId": {
+     "Fn::GetAtt": [
+      "EcsSecurityGroup44008BF1",
+      "GroupId"
+     ]
+    },
+    "IpProtocol": "tcp",
+    "SourceSecurityGroupId": {
+     "Fn::GetAtt": [
+      "AlbSecurityGroup86A59E99",
+      "GroupId"
+     ]
+    },
+    "ToPort": 8080
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/EcsSecurityGroup/from ZilloApiEcsStackAlbSecurityGroup8D7D187A:8080"
+   }
+  },
+  "ApiAlbDD21E9E1": {
+   "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+   "Properties": {
+    "LoadBalancerAttributes": [
+     {
+      "Key": "deletion_protection.enabled",
+      "Value": "false"
+     }
+    ],
+    "Name": "Zillo-API-ALB",
+    "Scheme": "internet-facing",
+    "SecurityGroups": [
+     {
+      "Fn::GetAtt": [
+       "AlbSecurityGroup86A59E99",
+       "GroupId"
+      ]
+     }
+    ],
+    "Subnets": [
+     {
+      "Ref": "ApiVpcPublicSubnet1SubnetFE6B0D1A"
+     },
+     {
+      "Ref": "ApiVpcPublicSubnet2Subnet1D0D5E11"
+     }
+    ],
+    "Type": "application"
+   },
+   "DependsOn": [
+    "ApiVpcPublicSubnet1DefaultRoute04DAEA41",
+    "ApiVpcPublicSubnet1RouteTableAssociationF3FC5734",
+    "ApiVpcPublicSubnet2DefaultRouteACF417AB",
+    "ApiVpcPublicSubnet2RouteTableAssociationE530FE2B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiAlb/Resource"
+   }
+  },
+  "ApiAlbHttpsListenerA2DE740E": {
+   "Type": "AWS::ElasticLoadBalancingV2::Listener",
+   "Properties": {
+    "Certificates": [
+     {
+      "CertificateArn": {
+       "Ref": "ApiCertificate1D5B2B3B"
+      }
+     }
+    ],
+    "DefaultActions": [
+     {
+      "TargetGroupArn": {
+       "Ref": "ApiTargetGroup5723F19D"
+      },
+      "Type": "forward"
+     }
+    ],
+    "LoadBalancerArn": {
+     "Ref": "ApiAlbDD21E9E1"
+    },
+    "Port": 443,
+    "Protocol": "HTTPS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiAlb/HttpsListener/Resource"
+   }
+  },
+  "ApiAlbHttpListenerA8172EA3": {
+   "Type": "AWS::ElasticLoadBalancingV2::Listener",
+   "Properties": {
+    "DefaultActions": [
+     {
+      "RedirectConfig": {
+       "Port": "443",
+       "Protocol": "HTTPS",
+       "StatusCode": "HTTP_301"
+      },
+      "Type": "redirect"
+     }
+    ],
+    "LoadBalancerArn": {
+     "Ref": "ApiAlbDD21E9E1"
+    },
+    "Port": 80,
+    "Protocol": "HTTP"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiAlb/HttpListener/Resource"
+   }
+  },
+  "ApiTargetGroup5723F19D": {
+   "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+   "Properties": {
+    "HealthCheckIntervalSeconds": 30,
+    "HealthCheckPath": "/api/health",
+    "HealthCheckTimeoutSeconds": 5,
+    "HealthyThresholdCount": 2,
+    "Name": "Zillo-API-TG",
+    "Port": 8080,
+    "Protocol": "HTTP",
+    "TargetGroupAttributes": [
+     {
+      "Key": "stickiness.enabled",
+      "Value": "false"
+     }
+    ],
+    "TargetType": "ip",
+    "UnhealthyThresholdCount": 3,
+    "VpcId": {
+     "Ref": "ApiVpc5D2E523E"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiTargetGroup/Resource"
+   }
+  },
+  "ApiCertificate1D5B2B3B": {
+   "Type": "AWS::CertificateManager::Certificate",
+   "Properties": {
+    "DomainName": "api.zillo.app",
+    "DomainValidationOptions": [
+     {
+      "DomainName": "api.zillo.app",
+      "HostedZoneId": "Z040845929WUCKS0P5IBA"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Name",
+      "Value": "ZilloApiEcsStack/ApiCertificate"
+     }
+    ],
+    "ValidationMethod": "DNS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiCertificate/Resource"
+   }
+  },
+  "ApiDnsRecordD7F299CB": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::Join": [
+       "",
+       [
+        "dualstack.",
+        {
+         "Fn::GetAtt": [
+          "ApiAlbDD21E9E1",
+          "DNSName"
+         ]
+        }
+       ]
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::GetAtt": [
+       "ApiAlbDD21E9E1",
+       "CanonicalHostedZoneID"
+      ]
+     }
+    },
+    "HostedZoneId": "Z040845929WUCKS0P5IBA",
+    "Name": "api.zillo.app.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiDnsRecord/Resource"
+   }
+  },
+  "ApiServiceC9037CF0": {
+   "Type": "AWS::ECS::Service",
+   "Properties": {
+    "Cluster": {
+     "Ref": "ApiCluster7CE9CBE6"
+    },
+    "DeploymentConfiguration": {
+     "Alarms": {
+      "AlarmNames": [],
+      "Enable": false,
+      "Rollback": false
+     },
+     "DeploymentCircuitBreaker": {
+      "Enable": true,
+      "Rollback": true
+     },
+     "MaximumPercent": 200,
+     "MinimumHealthyPercent": 50
+    },
+    "DeploymentController": {
+     "Type": "ECS"
+    },
+    "DesiredCount": 1,
+    "EnableECSManagedTags": false,
+    "HealthCheckGracePeriodSeconds": 60,
+    "LaunchType": "FARGATE",
+    "LoadBalancers": [
+     {
+      "ContainerName": "zillo-api",
+      "ContainerPort": 8080,
+      "TargetGroupArn": {
+       "Ref": "ApiTargetGroup5723F19D"
+      }
+     }
+    ],
+    "NetworkConfiguration": {
+     "AwsvpcConfiguration": {
+      "AssignPublicIp": "ENABLED",
+      "SecurityGroups": [
+       {
+        "Fn::GetAtt": [
+         "EcsSecurityGroup44008BF1",
+         "GroupId"
+        ]
+       }
+      ],
+      "Subnets": [
+       {
+        "Ref": "ApiVpcPublicSubnet1SubnetFE6B0D1A"
+       },
+       {
+        "Ref": "ApiVpcPublicSubnet2Subnet1D0D5E11"
+       }
+      ]
+     }
+    },
+    "ServiceName": "Zillo-API-Service",
+    "TaskDefinition": {
+     "Ref": "ApiTaskDef37DBDBD0"
+    }
+   },
+   "DependsOn": [
+    "ApiAlbHttpsListenerA2DE740E",
+    "TaskRoleDefaultPolicy07FC53DE",
+    "TaskRole30FC0FBB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiService/Service"
+   }
+  },
+  "ApiServiceTaskCountTargetBFC64025": {
+   "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+   "Properties": {
+    "MaxCapacity": 3,
+    "MinCapacity": 1,
+    "ResourceId": {
+     "Fn::Join": [
+      "",
+      [
+       "service/",
+       {
+        "Ref": "ApiCluster7CE9CBE6"
+       },
+       "/",
+       {
+        "Fn::GetAtt": [
+         "ApiServiceC9037CF0",
+         "Name"
+        ]
+       }
+      ]
+     ]
+    },
+    "RoleARN": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":iam::711801600585:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+      ]
+     ]
+    },
+    "ScalableDimension": "ecs:service:DesiredCount",
+    "ServiceNamespace": "ecs"
+   },
+   "DependsOn": [
+    "TaskRoleDefaultPolicy07FC53DE",
+    "TaskRole30FC0FBB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiService/TaskCount/Target/Resource"
+   }
+  },
+  "ApiServiceTaskCountTargetCpuScaling9EAFB075": {
+   "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+   "Properties": {
+    "PolicyName": "ZilloApiEcsStackApiServiceTaskCountTargetCpuScalingA383EB0C",
+    "PolicyType": "TargetTrackingScaling",
+    "ScalingTargetId": {
+     "Ref": "ApiServiceTaskCountTargetBFC64025"
+    },
+    "TargetTrackingScalingPolicyConfiguration": {
+     "PredefinedMetricSpecification": {
+      "PredefinedMetricType": "ECSServiceAverageCPUUtilization"
+     },
+     "ScaleInCooldown": 60,
+     "ScaleOutCooldown": 60,
+     "TargetValue": 70
+    }
+   },
+   "DependsOn": [
+    "TaskRoleDefaultPolicy07FC53DE",
+    "TaskRole30FC0FBB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/ApiService/TaskCount/Target/CpuScaling/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31Ry27jMAz8lt4VdeuiH5B6sUWBAhvYQa8Lmma8bBTJkKgEgaB/L/xInOxhTxyORiJnVOjiudBPD3AKK2z3K8ONTrUA7hWcwp9E6HVFvQsszp9fIZAiLHT67FGVO/u5KdUmNoaxjo0lGbgFVS4KbaExtPALtw7BIYOws1fxAN6tkLckbyB0gvM8Zu7WIoB/D2RF1YTRs5zfvIv9OOC/xLvtPIWQFWHQqTQxCPlBdYG/wHcw7Bb2P2nHli+b/cs4K8CW/A03363JHxkntzOsEczgdnikdNFKVgwHnSo3pTLWjTOMo9MJZWVcF3T6cN3VzAVnRQaCMBoHbQMGLLLtjoVO6743jGOgHw7a1/Fs8njX3+o4CNlZc8E351vwHcl1h5s2KyQvvBuEdAALHXmdyoUbo13arPzwwS/POq0rQufb0f2IapKsYJkKUVxAMGw7nZYAh9ljtPfMVLYecM+2q6d7S6J3RM6qouCinz7pd5Q+SlbWtaS/wuOxKPTTi/7x8BWYVz5a4QPpaqrfM79flisDAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ZilloApiEcsStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "AlbDnsName": {
+   "Description": "ALB DNS Name",
+   "Value": {
+    "Fn::GetAtt": [
+     "ApiAlbDD21E9E1",
+     "DNSName"
+    ]
+   }
+  },
+  "AlbArn": {
+   "Description": "ALB ARN (for adding HTTPS listener)",
+   "Value": {
+    "Ref": "ApiAlbDD21E9E1"
+   }
+  },
+  "ApiUrl": {
+   "Description": "API URL",
+   "Value": "https://api.zillo.app"
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
