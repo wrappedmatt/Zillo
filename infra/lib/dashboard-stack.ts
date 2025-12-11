@@ -49,8 +49,26 @@ export class DashboardStack extends cdk.Stack {
       ),
     });
 
-    // Grant ECR permissions to GitHub Actions role
+    // Grant ECR permissions to GitHub Actions role for dashboard repository
     repository.grantPullPush(githubActionsRole);
+
+    // Grant ECR permissions for all Zillo repositories (rewards, api, etc.)
+    // This is needed because we can't modify imported roles in other stacks
+    githubActionsRole.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'ecr:GetDownloadUrlForLayer',
+        'ecr:BatchGetImage',
+        'ecr:BatchCheckLayerAvailability',
+        'ecr:PutImage',
+        'ecr:InitiateLayerUpload',
+        'ecr:UploadLayerPart',
+        'ecr:CompleteLayerUpload',
+      ],
+      resources: [
+        `arn:aws:ecr:${this.region}:${this.account}:repository/zillo-*`,
+      ],
+    }));
 
     // Also need GetAuthorizationToken for docker login
     githubActionsRole.addToPolicy(new iam.PolicyStatement({

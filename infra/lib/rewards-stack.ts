@@ -29,15 +29,8 @@ export class RewardsStack extends cdk.Stack {
       ],
     });
 
-    // Import existing GitHub OIDC role (created by dashboard stack)
-    const githubActionsRole = iam.Role.fromRoleName(
-      this,
-      'GitHubActionsRole',
-      'Zillo-GitHubActions-Role'
-    );
-
-    // Grant ECR permissions to GitHub Actions role
-    repository.grantPullPush(githubActionsRole);
+    // Note: GitHub Actions role permissions for ECR are managed in dashboard-stack.ts
+    // The Zillo-GitHubActions-Role has permissions to push to all zillo-* ECR repos
 
     // Import dashboard secrets (reuse same credentials)
     const dashboardSecrets = props.dashboardSecretsArn
