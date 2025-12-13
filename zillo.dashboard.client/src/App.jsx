@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { AccountProvider } from './contexts/AccountContext'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Dashboard from './pages/Dashboard'
@@ -15,7 +16,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
+        <AccountProvider>
+          <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
@@ -33,7 +35,8 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/locations" element={<Locations />} />
           <Route path="/reporting" element={<Reporting />} />
-        </Routes>
+          </Routes>
+        </AccountProvider>
       </AuthProvider>
     </BrowserRouter>
   )

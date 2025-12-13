@@ -1,5 +1,6 @@
 import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
+import { ChevronsUpDown, Plus, Check } from "lucide-react"
+import { useAccount } from "@/contexts/AccountContext"
 
 import {
   DropdownMenu,
@@ -16,9 +17,55 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-export function AccountSwitcher({ accounts, activeAccount }) {
+export function AccountSwitcher() {
   const { isMobile } = useSidebar()
-  const [selectedAccount, setSelectedAccount] = React.useState(activeAccount)
+  const { accounts, currentAccount, switchAccount, loading } = useAccount()
+  const [switching, setSwitching] = React.useState(false)
+
+  const handleSwitchAccount = async (account) => {
+    if (account.id === currentAccount?.id) return
+
+    setSwitching(true)
+    try {
+      await switchAccount(account.id)
+      // Reload the page to refresh all data for the new account
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to switch account:', error)
+    } finally {
+      setSwitching(false)
+    }
+  }
+
+  const getInitials = (name) => {
+    if (!name) return "ZA"
+    return name.substring(0, 2).toUpperCase()
+  }
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case 'owner': return 'Owner'
+      case 'admin': return 'Admin'
+      case 'user': return 'Viewer'
+      default: return role
+    }
+  }
+
+  if (loading) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" className="animate-pulse">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary/50" />
+            <div className="grid flex-1 gap-1">
+              <div className="h-4 w-24 rounded bg-sidebar-primary/30" />
+              <div className="h-3 w-16 rounded bg-sidebar-primary/20" />
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
 
   return (
     <SidebarMenu>
@@ -28,18 +75,19 @@ export function AccountSwitcher({ accounts, activeAccount }) {
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              disabled={switching}
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <span className="text-sm font-semibold">
-                  {selectedAccount?.company_name?.substring(0, 2).toUpperCase() || "LA"}
+                  {getInitials(currentAccount?.companyName)}
                 </span>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {selectedAccount?.company_name || "Lemonade App"}
+                  {currentAccount?.companyName || "Select Account"}
                 </span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {selectedAccount?.points_per_dollar ? `${selectedAccount.points_per_dollar} pts per $` : "Free plan"}
+                  {currentAccount?.role ? getRoleLabel(currentAccount.role) : "No account selected"}
                 </span>
               </div>
               <ChevronsUpDown className="ml-auto" />
@@ -52,29 +100,38 @@ export function AccountSwitcher({ accounts, activeAccount }) {
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Accounts
+              Your Accounts
             </DropdownMenuLabel>
             {accounts.map((account) => (
               <DropdownMenuItem
                 key={account.id}
-                onClick={() => setSelectedAccount(account)}
-                className="gap-2 p-2"
+                onClick={() => handleSwitchAccount(account)}
+                className="gap-2 p-2 cursor-pointer"
+                disabled={switching}
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border bg-background">
                   <span className="text-xs font-medium">
-                    {account.company_name?.substring(0, 2).toUpperCase() || "LA"}
+                    {getInitials(account.companyName)}
                   </span>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-medium">{account.company_name}</span>
+                <div className="flex flex-col flex-1">
+                  <span className="font-medium">{account.companyName}</span>
                   <span className="text-xs text-muted-foreground">
-                    {account.points_per_dollar ? `${account.points_per_dollar} pts per $` : "Free"}
+                    {getRoleLabel(account.role)}
                   </span>
                 </div>
+                {account.id === currentAccount?.id && (
+                  <Check className="size-4 text-primary" />
+                )}
               </DropdownMenuItem>
             ))}
+            {accounts.length === 0 && (
+              <DropdownMenuItem disabled className="text-muted-foreground">
+                No accounts available
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem className="gap-2 p-2 cursor-pointer" disabled>
               <div className="flex size-6 items-center justify-center rounded-md border border-dashed bg-background">
                 <Plus className="size-4" />
               </div>

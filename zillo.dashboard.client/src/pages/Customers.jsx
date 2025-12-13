@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useAccount } from '@/contexts/AccountContext'
 import { supabase } from '@/lib/supabase'
 import { AppSidebar } from '@/components/app-sidebar'
 import {
@@ -55,6 +56,7 @@ import {
 
 export default function Customers() {
   const { user } = useAuth()
+  const { currentAccount, getAuthHeaders } = useAccount()
   const navigate = useNavigate()
   const [customers, setCustomers] = useState([])
   const [filteredCustomers, setFilteredCustomers] = useState([])
@@ -74,17 +76,12 @@ export default function Customers() {
     }
     loadAccount()
     loadCustomers()
-  }, [user, navigate])
+  }, [user, navigate, currentAccount])
 
   const loadAccount = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
       const response = await fetch('/api/accounts/me', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
+        headers: getAuthHeaders()
       })
 
       if (response.ok) {
@@ -114,18 +111,14 @@ export default function Customers() {
   const loadCustomers = async () => {
     try {
       setLoading(true)
-      const { data: { session } } = await supabase.auth.getSession()
+      const headers = getAuthHeaders()
 
-      if (!session) {
+      if (!headers.Authorization) {
         navigate('/signin')
         return
       }
 
-      const response = await fetch('/api/customers', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`
-        }
-      })
+      const response = await fetch('/api/customers', { headers })
 
       if (response.ok) {
         const data = await response.json()

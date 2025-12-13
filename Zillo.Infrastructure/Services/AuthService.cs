@@ -9,11 +9,16 @@ public class AuthService : IAuthService
 {
     private readonly Supabase.Client _supabase;
     private readonly IAccountRepository _accountRepository;
+    private readonly IAccountUserRepository _accountUserRepository;
 
-    public AuthService(Supabase.Client supabase, IAccountRepository accountRepository)
+    public AuthService(
+        Supabase.Client supabase,
+        IAccountRepository accountRepository,
+        IAccountUserRepository accountUserRepository)
     {
         _supabase = supabase;
         _accountRepository = accountRepository;
+        _accountUserRepository = accountUserRepository;
     }
 
     public async Task<AuthResponse> SignUpAsync(SignUpRequest request)
@@ -63,6 +68,25 @@ public class AuthService : IAuthService
             account = await _accountRepository.CreateAsync(account);
         }
 
+        // Ensure user has an account_users entry (for multi-account support)
+        var existingAccountUser = await _accountUserRepository.GetByUserAndAccountAsync(session.User.Id, account.Id);
+        if (existingAccountUser == null)
+        {
+            var accountUser = new AccountUser
+            {
+                Id = Guid.NewGuid(),
+                SupabaseUserId = session.User.Id,
+                AccountId = account.Id,
+                Email = request.Email,
+                Role = "owner",
+                JoinedAt = DateTime.UtcNow,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await _accountUserRepository.CreateAsync(accountUser);
+        }
+
         return new AuthResponse(
             session.AccessToken,
             session.RefreshToken,
@@ -81,6 +105,25 @@ public class AuthService : IAuthService
 
         if (account == null)
             throw new Exception("Account not found");
+
+        // Ensure user has an account_users entry (for migration from old system)
+        var existingAccountUser = await _accountUserRepository.GetByUserAndAccountAsync(session.User.Id, account.Id);
+        if (existingAccountUser == null)
+        {
+            var accountUser = new AccountUser
+            {
+                Id = Guid.NewGuid(),
+                SupabaseUserId = session.User.Id,
+                AccountId = account.Id,
+                Email = account.Email,
+                Role = "owner",
+                JoinedAt = DateTime.UtcNow,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await _accountUserRepository.CreateAsync(accountUser);
+        }
 
         return new AuthResponse(
             session.AccessToken,

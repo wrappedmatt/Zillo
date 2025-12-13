@@ -4,12 +4,12 @@ import {
   CreditCard,
   Settings2,
   Home,
-  Citrus,
   Smartphone,
   BarChart3,
   MapPin,
 } from "lucide-react"
 import { useAuth } from '@/contexts/AuthContext'
+import { useAccount } from '@/contexts/AccountContext'
 import { useLocation } from 'react-router-dom'
 import { AccountSwitcher } from "@/components/account-switcher"
 import { NavMain } from "@/components/nav-main"
@@ -22,16 +22,14 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-export function AppSidebar({
-  account,
-  ...props
-}) {
+export function AppSidebar(props) {
   const { user } = useAuth()
+  const { currentAccount } = useAccount()
   const location = useLocation()
 
   const data = {
     user: {
-      name: account?.company_name || "User",
+      name: currentAccount?.companyName || "User",
       email: user?.email || "",
       avatar: null,
     },
@@ -84,7 +82,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <AccountSwitcher accounts={account ? [account] : []} activeAccount={account} />
+        <AccountSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

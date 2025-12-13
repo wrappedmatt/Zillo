@@ -10,7 +10,7 @@ namespace Zillo.Dashboard.Server.Controllers;
 public class CustomersController : ControllerBase
 {
     private readonly ICustomerService _customerService;
-    private readonly IAuthService _authService;
+    private readonly IAccountUserRepository _accountUserRepository;
     private readonly ICustomerPortalService _portalService;
     private readonly IWalletService _walletService;
     private readonly ICardRepository _cardRepository;
@@ -19,7 +19,7 @@ public class CustomersController : ControllerBase
 
     public CustomersController(
         ICustomerService customerService,
-        IAuthService authService,
+        IAccountUserRepository accountUserRepository,
         ICustomerPortalService portalService,
         IWalletService walletService,
         ICardRepository cardRepository,
@@ -27,7 +27,7 @@ public class CustomersController : ControllerBase
         ILogger<CustomersController> logger)
     {
         _customerService = customerService;
-        _authService = authService;
+        _accountUserRepository = accountUserRepository;
         _portalService = portalService;
         _walletService = walletService;
         _cardRepository = cardRepository;
@@ -37,13 +37,46 @@ public class CustomersController : ControllerBase
 
     private async Task<Guid?> GetAccountIdFromToken()
     {
+        var supabaseUserId = GetSupabaseUserIdFromToken();
+        if (supabaseUserId == null)
+            return null;
+
+        // Check for X-Account-Id header first
+        var accountIdHeader = Request.Headers["X-Account-Id"].ToString();
+        if (!string.IsNullOrEmpty(accountIdHeader) && Guid.TryParse(accountIdHeader, out var requestedAccountId))
+        {
+            // Verify user has access to this account
+            var hasAccess = await _accountUserRepository.HasAccessAsync(supabaseUserId, requestedAccountId);
+            if (hasAccess)
+                return requestedAccountId;
+
+            _logger.LogWarning("User {UserId} attempted to access account {AccountId} without permission",
+                supabaseUserId, requestedAccountId);
+        }
+
+        // Fall back to user's first account
+        var userAccounts = await _accountUserRepository.GetBySupabaseUserIdAsync(supabaseUserId);
+        return userAccounts.FirstOrDefault()?.AccountId;
+    }
+
+    private string? GetSupabaseUserIdFromToken()
+    {
         var authHeader = Request.Headers["Authorization"].ToString();
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             return null;
 
-        var token = authHeader.Substring("Bearer ".Length);
-        var user = await _authService.GetCurrentUserAsync(token);
-        return user?.Id;
+        var token = authHeader["Bearer ".Length..];
+
+        try
+        {
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            return jwtToken.Subject;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     [HttpGet]
