@@ -244,10 +244,14 @@ public class WalletService : IWalletService
         // Add locations
         foreach (var location in locations.Take(10))
         {
+            // Skip locations without coordinates
+            if (!location.Latitude.HasValue || !location.Longitude.HasValue)
+                continue;
+
             var relevantText = !string.IsNullOrEmpty(location.Name)
                 ? $"Welcome to {location.Name}! Show your pass for rewards."
                 : $"Welcome! Show your pass at {account.CompanyName} for rewards.";
-            request.AddLocation(location.Latitude, location.Longitude, relevantText);
+            request.AddLocation(location.Latitude.Value, location.Longitude.Value, relevantText);
         }
 
         // Fetch and add icon images

@@ -44,10 +44,16 @@ public class LocationsController : ControllerBase
             {
                 id = l.Id,
                 name = l.Name,
-                address = l.Address,
+                addressLine1 = l.AddressLine1,
+                addressLine2 = l.AddressLine2,
+                city = l.City,
+                state = l.State,
+                postalCode = l.PostalCode,
+                country = l.Country,
                 latitude = l.Latitude,
                 longitude = l.Longitude,
                 relevantDistance = l.RelevantDistance,
+                stripeTerminalLocationId = l.StripeTerminalLocationId,
                 isActive = l.IsActive,
                 createdAt = l.CreatedAt
             }));
@@ -76,10 +82,16 @@ public class LocationsController : ControllerBase
             {
                 id = location.Id,
                 name = location.Name,
-                address = location.Address,
+                addressLine1 = location.AddressLine1,
+                addressLine2 = location.AddressLine2,
+                city = location.City,
+                state = location.State,
+                postalCode = location.PostalCode,
+                country = location.Country,
                 latitude = location.Latitude,
                 longitude = location.Longitude,
                 relevantDistance = location.RelevantDistance,
+                stripeTerminalLocationId = location.StripeTerminalLocationId,
                 isActive = location.IsActive,
                 createdAt = location.CreatedAt
             });
@@ -105,7 +117,12 @@ public class LocationsController : ControllerBase
                 Id = Guid.NewGuid(),
                 AccountId = account.Id,
                 Name = request.Name,
-                Address = request.Address,
+                AddressLine1 = request.AddressLine1,
+                AddressLine2 = request.AddressLine2,
+                City = request.City,
+                State = request.State,
+                PostalCode = request.PostalCode,
+                Country = request.Country ?? "US",
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
                 RelevantDistance = request.RelevantDistance ?? 100,
@@ -120,10 +137,16 @@ public class LocationsController : ControllerBase
             {
                 id = created.Id,
                 name = created.Name,
-                address = created.Address,
+                addressLine1 = created.AddressLine1,
+                addressLine2 = created.AddressLine2,
+                city = created.City,
+                state = created.State,
+                postalCode = created.PostalCode,
+                country = created.Country,
                 latitude = created.Latitude,
                 longitude = created.Longitude,
                 relevantDistance = created.RelevantDistance,
+                stripeTerminalLocationId = created.StripeTerminalLocationId,
                 isActive = created.IsActive,
                 createdAt = created.CreatedAt
             });
@@ -149,7 +172,12 @@ public class LocationsController : ControllerBase
                 return NotFound(new { error = "Location not found" });
 
             location.Name = request.Name;
-            location.Address = request.Address;
+            location.AddressLine1 = request.AddressLine1;
+            location.AddressLine2 = request.AddressLine2;
+            location.City = request.City;
+            location.State = request.State;
+            location.PostalCode = request.PostalCode;
+            location.Country = request.Country ?? "US";
             location.Latitude = request.Latitude;
             location.Longitude = request.Longitude;
             location.RelevantDistance = request.RelevantDistance ?? 100;
@@ -162,10 +190,16 @@ public class LocationsController : ControllerBase
             {
                 id = updated.Id,
                 name = updated.Name,
-                address = updated.Address,
+                addressLine1 = updated.AddressLine1,
+                addressLine2 = updated.AddressLine2,
+                city = updated.City,
+                state = updated.State,
+                postalCode = updated.PostalCode,
+                country = updated.Country,
                 latitude = updated.Latitude,
                 longitude = updated.Longitude,
                 relevantDistance = updated.RelevantDistance,
+                stripeTerminalLocationId = updated.StripeTerminalLocationId,
                 isActive = updated.IsActive,
                 createdAt = updated.CreatedAt
             });
@@ -285,18 +319,28 @@ public class LocationsController : ControllerBase
 
 public record CreateLocationRequest(
     string Name,
-    string? Address,
-    double Latitude,
-    double Longitude,
+    string? AddressLine1,
+    string? AddressLine2,
+    string? City,
+    string? State,
+    string? PostalCode,
+    string? Country,
+    double? Latitude,
+    double? Longitude,
     double? RelevantDistance,
     bool? IsActive
 );
 
 public record UpdateLocationRequest(
     string Name,
-    string? Address,
-    double Latitude,
-    double Longitude,
+    string? AddressLine1,
+    string? AddressLine2,
+    string? City,
+    string? State,
+    string? PostalCode,
+    string? Country,
+    double? Latitude,
+    double? Longitude,
     double? RelevantDistance,
     bool? IsActive
 );
