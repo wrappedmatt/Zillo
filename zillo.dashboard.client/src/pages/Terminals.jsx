@@ -21,7 +21,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Plus, Smartphone, Copy, Check, XCircle, Trash2 } from 'lucide-react'
+import { Plus, Smartphone, Copy, Check, XCircle, Trash2, CreditCard, ExternalLink, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function Terminals() {
   const { user } = useAuth()
@@ -33,6 +34,8 @@ export default function Terminals() {
   const [pairingCode, setPairingCode] = useState(null)
   const [pairingExpiry, setPairingExpiry] = useState(null)
   const [copiedCode, setCopiedCode] = useState(false)
+  const [stripeLoading, setStripeLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     document.title = 'Terminals | Zillo'
@@ -49,14 +52,19 @@ export default function Terminals() {
 
   const loadAccount = async () => {
     try {
-      const { data, error } = await supabase
-        .from('accounts')
-        .select('*')
-        .eq('supabase_user_id', user.id)
-        .single()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
 
-      if (error) throw error
-      setAccount(data)
+      const response = await fetch('/api/accounts/me', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setAccount(data)
+      }
     } catch (error) {
       console.error('Error loading account:', error)
     }
@@ -233,6 +241,124 @@ export default function Terminals() {
     }
   }
 
+  const handleStripeConnect = async () => {
+    setStripeLoading(true)
+    setError('')
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      // First, create the connected account if not exists
+      if (!account?.stripeAccountId) {
+        const createResponse = await fetch('/api/stripe-connect/create-account', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!createResponse.ok) {
+          const data = await createResponse.json()
+          throw new Error(data.error || 'Failed to create Stripe account')
+        }
+      }
+
+      // Get onboarding link
+      const linkResponse = await fetch('/api/stripe-connect/onboarding-link', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          returnUrl: `${window.location.origin}/terminals`,
+          refreshUrl: `${window.location.origin}/terminals`
+        })
+      })
+
+      if (!linkResponse.ok) {
+        const data = await linkResponse.json()
+        throw new Error(data.error || 'Failed to create onboarding link')
+      }
+
+      const { url } = await linkResponse.json()
+      window.location.href = url
+    } catch (error) {
+      console.error('Error connecting to Stripe:', error)
+      setError(error.message)
+    } finally {
+      setStripeLoading(false)
+    }
+  }
+
+  const handleStripeDashboard = async () => {
+    setStripeLoading(true)
+    setError('')
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      const response = await fetch('/api/stripe-connect/dashboard-link', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to get dashboard link')
+      }
+
+      const { url } = await response.json()
+      window.open(url, '_blank')
+    } catch (error) {
+      console.error('Error opening Stripe dashboard:', error)
+      setError(error.message)
+    } finally {
+      setStripeLoading(false)
+    }
+  }
+
+  const getStripeStatusDisplay = () => {
+    const status = account?.stripeOnboardingStatus || 'not_started'
+    const chargesEnabled = account?.stripeChargesEnabled
+
+    if (status === 'complete' && chargesEnabled) {
+      return {
+        label: 'Connected',
+        icon: CheckCircle2,
+        color: 'text-green-600',
+        bgColor: 'bg-green-50',
+        borderColor: 'border-green-200'
+      }
+    } else if (status === 'pending' || (status === 'complete' && !chargesEnabled)) {
+      return {
+        label: 'Pending verification',
+        icon: AlertCircle,
+        color: 'text-yellow-600',
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-200'
+      }
+    } else if (status === 'restricted') {
+      return {
+        label: 'Action required',
+        icon: AlertCircle,
+        color: 'text-orange-600',
+        bgColor: 'bg-orange-50',
+        borderColor: 'border-orange-200'
+      }
+    } else {
+      return {
+        label: 'Not connected',
+        icon: XCircle,
+        color: 'text-muted-foreground',
+        bgColor: 'bg-muted/30',
+        borderColor: 'border-border'
+      }
+    }
+  }
+
   const getStatusBadge = (terminal) => {
     // Check if terminal is pending pairing (never been paired)
     if (!terminal.paired_at) {
@@ -305,11 +431,87 @@ export default function Terminals() {
               <h2 className="text-xl font-semibold text-foreground">Terminals</h2>
               <p className="text-sm text-muted-foreground">Manage your POS terminals and devices</p>
             </div>
-            <Button onClick={handleGeneratePairingCode}>
+            <Button onClick={handleGeneratePairingCode} disabled={!account?.stripeChargesEnabled}>
               <Plus className="mr-2 h-4 w-4" />
               Add Terminal
             </Button>
           </div>
+
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Stripe Connect Section */}
+          {(() => {
+            const stripeStatus = getStripeStatusDisplay()
+            const StatusIcon = stripeStatus.icon
+            return (
+              <Card className={`${stripeStatus.borderColor} border`}>
+                <CardHeader className={stripeStatus.bgColor}>
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    <CardTitle className="text-lg">Payment Setup</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Connect your Stripe account to accept payments from terminals
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${stripeStatus.bgColor}`}>
+                        <StatusIcon className={`h-4 w-4 ${stripeStatus.color}`} />
+                        <span className={`text-sm font-medium ${stripeStatus.color}`}>
+                          {stripeStatus.label}
+                        </span>
+                      </div>
+                      {account?.stripeChargesEnabled && (
+                        <span className="text-sm text-muted-foreground">
+                          Ready to accept payments
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {account?.stripeAccountId && account?.stripeOnboardingStatus === 'complete' && account?.stripeChargesEnabled ? (
+                        <Button
+                          variant="outline"
+                          onClick={handleStripeDashboard}
+                          disabled={stripeLoading}
+                        >
+                          {stripeLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : (
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                          )}
+                          Stripe Dashboard
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleStripeConnect}
+                          disabled={stripeLoading}
+                        >
+                          {stripeLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          ) : (
+                            <CreditCard className="h-4 w-4 mr-2" />
+                          )}
+                          {account?.stripeAccountId ? 'Continue setup' : 'Connect Stripe'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {!account?.stripeChargesEnabled && (
+                    <p className="text-sm text-muted-foreground mt-4">
+                      You need to connect your Stripe account before you can pair terminals and accept payments.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })()}
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {terminals.map((terminal) => (

@@ -45,6 +45,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<ITerminalRepository, TerminalRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IAccountUserRepository, AccountUserRepository>();
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -53,6 +54,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ITerminalService, TerminalService>();
 builder.Services.AddScoped<IStripeConnectService, StripeConnectService>();
+builder.Services.AddScoped<IAccountSwitchService, AccountSwitchService>();
 
 // Add HttpClient factory for geocoding and other HTTP calls
 builder.Services.AddHttpClient();

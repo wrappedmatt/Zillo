@@ -1,4 +1,3 @@
-using Zillo.Application.Services;
 using Zillo.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,28 +8,64 @@ namespace Zillo.Dashboard.Server.Controllers;
 public class AccountsController : ControllerBase
 {
     private readonly IAccountRepository _accountRepository;
-    private readonly IAuthService _authService;
+    private readonly IAccountUserRepository _accountUserRepository;
     private readonly ILogger<AccountsController> _logger;
 
     public AccountsController(
         IAccountRepository accountRepository,
-        IAuthService authService,
+        IAccountUserRepository accountUserRepository,
         ILogger<AccountsController> logger)
     {
         _accountRepository = accountRepository;
-        _authService = authService;
+        _accountUserRepository = accountUserRepository;
         _logger = logger;
     }
 
-    private async Task<Guid?> GetAccountIdFromToken()
+    /// <summary>
+    /// Gets the account ID from X-Account-Id header or falls back to user's first account
+    /// </summary>
+    private async Task<Guid?> GetAccountIdFromRequest()
+    {
+        var supabaseUserId = GetSupabaseUserIdFromToken();
+        if (supabaseUserId == null)
+            return null;
+
+        // Check for X-Account-Id header first
+        var accountIdHeader = Request.Headers["X-Account-Id"].ToString();
+        if (!string.IsNullOrEmpty(accountIdHeader) && Guid.TryParse(accountIdHeader, out var requestedAccountId))
+        {
+            // Verify user has access to this account
+            var hasAccess = await _accountUserRepository.HasAccessAsync(supabaseUserId, requestedAccountId);
+            if (hasAccess)
+                return requestedAccountId;
+
+            _logger.LogWarning("User {UserId} attempted to access account {AccountId} without permission",
+                supabaseUserId, requestedAccountId);
+        }
+
+        // Fall back to user's first account
+        var userAccounts = await _accountUserRepository.GetBySupabaseUserIdAsync(supabaseUserId);
+        return userAccounts.FirstOrDefault()?.AccountId;
+    }
+
+    private string? GetSupabaseUserIdFromToken()
     {
         var authHeader = Request.Headers["Authorization"].ToString();
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             return null;
 
-        var token = authHeader.Substring("Bearer ".Length);
-        var user = await _authService.GetCurrentUserAsync(token);
-        return user?.Id;
+        var token = authHeader["Bearer ".Length..];
+
+        try
+        {
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            return jwtToken.Subject;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>
@@ -41,7 +76,7 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var accountId = await GetAccountIdFromToken();
+            var accountId = await GetAccountIdFromRequest();
             if (accountId == null)
                 return Unauthorized();
 
@@ -82,6 +117,11 @@ public class AccountsController : ControllerBase
                 walletPassStripUrl = account.WalletPassStripUrl,
                 walletPassLabelColor = account.WalletPassLabelColor,
                 walletPassForegroundColor = account.WalletPassForegroundColor,
+                // Stripe Connect status
+                stripeAccountId = account.StripeAccountId,
+                stripeOnboardingStatus = account.StripeOnboardingStatus,
+                stripeChargesEnabled = account.StripeChargesEnabled,
+                stripePayoutsEnabled = account.StripePayoutsEnabled,
                 createdAt = account.CreatedAt
             });
         }
@@ -100,7 +140,7 @@ public class AccountsController : ControllerBase
     {
         try
         {
-            var accountId = await GetAccountIdFromToken();
+            var accountId = await GetAccountIdFromRequest();
             if (accountId == null)
                 return Unauthorized();
 
@@ -176,6 +216,11 @@ public class AccountsController : ControllerBase
                 walletPassStripUrl = updatedAccount.WalletPassStripUrl,
                 walletPassLabelColor = updatedAccount.WalletPassLabelColor,
                 walletPassForegroundColor = updatedAccount.WalletPassForegroundColor,
+                // Stripe Connect status
+                stripeAccountId = updatedAccount.StripeAccountId,
+                stripeOnboardingStatus = updatedAccount.StripeOnboardingStatus,
+                stripeChargesEnabled = updatedAccount.StripeChargesEnabled,
+                stripePayoutsEnabled = updatedAccount.StripePayoutsEnabled,
                 createdAt = updatedAccount.CreatedAt
             });
         }
