@@ -2,6 +2,8 @@ package com.zillo.terminal.loyalty.service
 
 import android.util.Log
 import com.zillo.terminal.loyalty.data.BrandingSettings
+import com.zillo.terminal.loyalty.data.IdentifyResponse
+import com.zillo.terminal.loyalty.storage.SecureStorage
 import com.stripe.aod.sampleapp.Config
 import com.stripe.aod.sampleapp.network.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -104,6 +106,51 @@ object BrandingService {
         } catch (e: Exception) {
             Log.e(Config.TAG, "Failed to parse color: $hexColor", e)
             fallback
+        }
+    }
+
+    // ==================== External Mode Support ====================
+
+    /**
+     * Initialize from external mode identification response
+     * Used when terminal identifies via Stripe Location ID
+     */
+    fun initializeFromIdentifyResponse(response: IdentifyResponse) {
+        // Set branding from identify response
+        _brandingSettings.value = response.branding
+        isInitialized = true
+        Log.d(Config.TAG, "Branding initialized from identify response: ${response.companyName}")
+
+        // Update Config with loyalty settings from response
+        Config.loyaltySystemType = response.loyaltySystemType ?: "cashback"
+        Config.cashbackRate = response.cashbackRate ?: 5.0
+        Config.historicalRewardDays = response.historicalRewardDays ?: 14
+        Config.welcomeIncentive = response.welcomeIncentive ?: 5.0
+
+        Log.d(Config.TAG, "Account configuration loaded from identify:")
+        Log.d(Config.TAG, "  - Loyalty Type: ${Config.loyaltySystemType}")
+        Log.d(Config.TAG, "  - Cashback Rate: ${Config.cashbackRate}%")
+        Log.d(Config.TAG, "  - Welcome Incentive: $${Config.welcomeIncentive}")
+    }
+
+    /**
+     * Fetch settings using external mode (re-identify by location)
+     * Used to refresh settings when in external mode
+     */
+    suspend fun fetchExternalModeSettings(): Result<IdentifyResponse> {
+        val locationId = SecureStorage.getStripeLocationId()
+        if (locationId.isNullOrEmpty()) {
+            return Result.failure(IllegalStateException("No Stripe Location ID stored"))
+        }
+
+        return try {
+            Log.d(Config.TAG, "Re-identifying terminal by location: $locationId")
+            val response = ApiClient.identifyByLocation(locationId).getOrThrow()
+            initializeFromIdentifyResponse(response)
+            Result.success(response)
+        } catch (e: Exception) {
+            Log.e(Config.TAG, "Failed to re-identify terminal", e)
+            Result.failure(e)
         }
     }
 }

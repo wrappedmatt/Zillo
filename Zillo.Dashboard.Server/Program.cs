@@ -46,6 +46,7 @@ builder.Services.AddScoped<ITerminalRepository, TerminalRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IAccountUserRepository, AccountUserRepository>();
+builder.Services.AddScoped<IExternalLocationRepository, ExternalLocationRepository>();
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();

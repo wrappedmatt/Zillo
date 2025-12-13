@@ -2,6 +2,7 @@ package com.stripe.aod.sampleapp.network
 
 import com.zillo.terminal.loyalty.data.AccountConfig
 import com.zillo.terminal.loyalty.data.BrandingSettings
+import com.zillo.terminal.loyalty.data.IdentifyResponse
 import com.zillo.terminal.loyalty.data.PairingResponse
 import com.stripe.aod.sampleapp.data.ApplyRedemptionResponse
 import com.stripe.aod.sampleapp.data.CapturePaymentResponse
@@ -77,4 +78,12 @@ interface BackendService {
      */
     @GET("api/terminal/config")
     suspend fun getAccountConfiguration(): AccountConfig
+
+    /**
+     * Identify terminal by Stripe Location ID (external/partner mode)
+     * Used when the Zillo app is deployed by a partner platform (e.g., Lightspeed)
+     * and needs to identify which Zillo account to connect to
+     */
+    @POST("api/v1.0/terminal/identify")
+    suspend fun identifyByLocation(@Body body: Map<String, String>): IdentifyResponse
 }

@@ -16,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.zillo.terminal.loyalty.fragment.ExternalModeFragment
 import com.zillo.terminal.loyalty.fragment.PairingFragment
 import com.zillo.terminal.loyalty.service.BrandingService
 import com.zillo.terminal.loyalty.storage.SecureStorage
@@ -28,7 +29,10 @@ import com.stripe.stripeterminal.Terminal
 import com.stripe.stripeterminal.external.models.TerminalException
 import com.stripe.stripeterminal.log.LogLevel
 
-class MainActivity : AppCompatActivity(), PairingFragment.PairingListener {
+class MainActivity : AppCompatActivity(),
+    PairingFragment.PairingListener,
+    ExternalModeFragment.ExternalModeListener,
+    ExternalModeFragment.ModeSelectionListener {
     private val viewModel by viewModels<MainViewModel>()
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -42,21 +46,29 @@ class MainActivity : AppCompatActivity(), PairingFragment.PairingListener {
         // Initialize SecureStorage
         SecureStorage.init(applicationContext)
 
-        // Check if terminal is paired
-        if (!SecureStorage.isTerminalPaired()) {
+        // Check if terminal is configured (either paired or external mode)
+        if (!SecureStorage.isTerminalConfigured()) {
             // Show pairing fragment directly without loading main layout
             showPairingFragment()
         } else {
-            // Load API key and continue with normal flow
-            ApiClient.terminalApiKey = SecureStorage.getTerminalApiKey()
+            // Load API key for paired mode (not needed for external mode)
+            if (!SecureStorage.isExternalMode()) {
+                ApiClient.terminalApiKey = SecureStorage.getTerminalApiKey()
+            }
 
             // Load main UI
             setContentView(R.layout.activity_main)
             requestPermissionsIfNecessary()
 
-            // Fetch branding settings after terminal is paired
+            // Fetch branding settings based on mode
             lifecycleScope.launch {
-                BrandingService.fetchBrandingSettings()
+                if (SecureStorage.isExternalMode()) {
+                    // In external mode, re-fetch settings using identify
+                    BrandingService.fetchExternalModeSettings()
+                } else {
+                    // In paired mode, use normal branding fetch
+                    BrandingService.fetchBrandingSettings()
+                }
             }
         }
     }
@@ -71,6 +83,27 @@ class MainActivity : AppCompatActivity(), PairingFragment.PairingListener {
     override fun onPairingComplete() {
         // Recreate activity to reload with paired state
         recreate()
+    }
+
+    override fun onExternalModeComplete() {
+        // Recreate activity to reload with external mode configuration
+        recreate()
+    }
+
+    override fun onSwitchToPairingMode() {
+        // Switch to pairing fragment
+        showPairingFragment()
+    }
+
+    override fun onSwitchToExternalMode() {
+        // Switch to external mode fragment
+        showExternalModeFragment()
+    }
+
+    private fun showExternalModeFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(android.R.id.content, ExternalModeFragment())
+            .commit()
     }
 
     private fun requestPermissionsIfNecessary() {

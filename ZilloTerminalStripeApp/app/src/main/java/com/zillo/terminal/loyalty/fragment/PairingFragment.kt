@@ -31,6 +31,7 @@ class PairingFragment : Fragment() {
     private lateinit var pairButton: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var statusText: TextView
+    private lateinit var externalModeLink: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,12 +49,18 @@ class PairingFragment : Fragment() {
         pairButton = view.findViewById(R.id.pair_button)
         progressBar = view.findViewById(R.id.progress_bar)
         statusText = view.findViewById(R.id.status_text)
+        externalModeLink = view.findViewById(R.id.external_mode_link)
 
         // Initialize SecureStorage
         context?.let { SecureStorage.init(it.applicationContext) }
 
         // Set default terminal label
         terminalLabelInput.setText(getDefaultTerminalLabel())
+
+        // Handle switch to external mode
+        externalModeLink.setOnClickListener {
+            (activity as? ExternalModeFragment.ModeSelectionListener)?.onSwitchToExternalMode()
+        }
 
         pairButton.setOnClickListener {
             val pairingCode = pairingCodeInput.text.toString().trim()

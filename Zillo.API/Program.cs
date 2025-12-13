@@ -45,6 +45,7 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<ITerminalRepository, TerminalRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<IUnclaimedTransactionRepository, UnclaimedTransactionRepository>();
+builder.Services.AddScoped<IExternalLocationRepository, ExternalLocationRepository>();
 
 // Register services
 builder.Services.AddScoped<ICustomerService, CustomerService>();

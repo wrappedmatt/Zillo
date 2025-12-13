@@ -1,6 +1,7 @@
 package com.stripe.aod.sampleapp.network
 
 import android.util.Log
+import com.zillo.terminal.loyalty.data.IdentifyResponse
 import com.zillo.terminal.loyalty.data.PairingResponse
 import com.stripe.aod.sampleapp.BuildConfig
 import com.stripe.aod.sampleapp.Config
@@ -32,8 +33,8 @@ object ApiClient {
             val original = chain.request()
             val apiKey = terminalApiKey
 
-            // If no API key is set or this is a pairing request, proceed without auth
-            if (apiKey == null || original.url.encodedPath.contains("/pair")) {
+            // If no API key is set or this is a pairing/identify request, proceed without auth
+            if (apiKey == null || original.url.encodedPath.contains("/pair") || original.url.encodedPath.contains("/identify")) {
                 return chain.proceed(original)
             }
 
@@ -160,6 +161,32 @@ object ApiClient {
             Log.d(Config.TAG, "API: Pairing terminal with code: $pairingCode")
             val response = backendService.pairTerminal(body)
             Log.d(Config.TAG, "API: Terminal paired successfully: ${response.terminalId}")
+            response
+        }
+
+    /**
+     * Identify terminal by Stripe Location ID (external/partner mode)
+     * Used when the Zillo app is deployed by a partner platform
+     */
+    suspend fun identifyByLocation(stripeLocationId: String): Result<IdentifyResponse> =
+        runCatching {
+            val body = mapOf("stripeLocationId" to stripeLocationId)
+            Log.d(Config.TAG, "API: Identifying terminal by location: $stripeLocationId")
+            val response = backendService.identifyByLocation(body)
+            Log.d(Config.TAG, "API: Terminal identified successfully for account: ${response.companyName}")
+            response
+        }
+
+    /**
+     * Identify terminal by pairing code (external/partner mode)
+     * Simple 6-character alphanumeric code from Zillo dashboard
+     */
+    suspend fun identifyByPairingCode(pairingCode: String): Result<IdentifyResponse> =
+        runCatching {
+            val body = mapOf("pairingCode" to pairingCode)
+            Log.d(Config.TAG, "API: Identifying terminal by pairing code: $pairingCode")
+            val response = backendService.identifyByLocation(body)
+            Log.d(Config.TAG, "API: Terminal identified successfully for account: ${response.companyName}")
             response
         }
 }

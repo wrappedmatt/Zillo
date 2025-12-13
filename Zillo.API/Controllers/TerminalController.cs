@@ -20,6 +20,7 @@ public class TerminalController : ControllerBase
     private readonly ICardRepository _cardRepository;
     private readonly IUnclaimedTransactionRepository _unclaimedTransactionRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly IExternalLocationRepository _externalLocationRepository;
     private readonly ILogger<TerminalController> _logger;
     private readonly IConfiguration _configuration;
 
@@ -30,6 +31,7 @@ public class TerminalController : ControllerBase
         ICardRepository cardRepository,
         IUnclaimedTransactionRepository unclaimedTransactionRepository,
         IAccountRepository accountRepository,
+        IExternalLocationRepository externalLocationRepository,
         ILogger<TerminalController> logger,
         IConfiguration configuration)
     {
@@ -39,6 +41,7 @@ public class TerminalController : ControllerBase
         _cardRepository = cardRepository;
         _unclaimedTransactionRepository = unclaimedTransactionRepository;
         _accountRepository = accountRepository;
+        _externalLocationRepository = externalLocationRepository;
         _logger = logger;
         _configuration = configuration;
     }
@@ -188,4 +191,113 @@ public class TerminalController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    /// <summary>
+    /// Identify a terminal by its Stripe Location ID or pairing code (for external/partner model).
+    /// Used when the Zillo app is deployed by a partner platform (e.g., Lightspeed).
+    /// Returns account configuration for the linked Zillo account.
+    /// Supports both Stripe Location ID (auto-detected from terminal) and pairing code (manual entry).
+    /// </summary>
+    [HttpPost("identify")]
+    public async Task<IActionResult> IdentifyByLocation([FromBody] IdentifyByLocationRequest request)
+    {
+        try
+        {
+            // Must provide either stripeLocationId or pairingCode
+            if (string.IsNullOrEmpty(request.StripeLocationId) && string.IsNullOrEmpty(request.PairingCode))
+            {
+                return BadRequest(new { error = "Either Stripe location ID or pairing code is required" });
+            }
+
+            ExternalLocation? externalLocation = null;
+
+            // Try to identify by pairing code first (if provided)
+            if (!string.IsNullOrEmpty(request.PairingCode))
+            {
+                _logger.LogInformation("Terminal identifying by pairing code: {PairingCode}", request.PairingCode);
+                externalLocation = await _externalLocationRepository.GetByPairingCodeAsync(request.PairingCode.ToUpperInvariant());
+
+                if (externalLocation == null || !externalLocation.IsActive)
+                {
+                    _logger.LogWarning("No active external location found for pairing code: {PairingCode}", request.PairingCode);
+                    return NotFound(new { error = "Invalid pairing code. Please check the code and try again." });
+                }
+            }
+            // Fall back to Stripe location ID
+            else if (!string.IsNullOrEmpty(request.StripeLocationId))
+            {
+                _logger.LogInformation("Terminal identifying by Stripe location ID: {StripeLocationId}", request.StripeLocationId);
+                externalLocation = await _externalLocationRepository.GetByStripeLocationIdAsync(request.StripeLocationId);
+
+                if (externalLocation == null || !externalLocation.IsActive)
+                {
+                    _logger.LogWarning("No active external location found for Stripe location ID: {StripeLocationId}", request.StripeLocationId);
+                    return NotFound(new { error = "Location not linked to a Zillo account. Please configure this location in your Zillo dashboard or enter a pairing code." });
+                }
+            }
+
+            if (externalLocation == null)
+            {
+                return NotFound(new { error = "Unable to identify terminal" });
+            }
+
+            // Update last seen timestamp
+            await _externalLocationRepository.UpdateLastSeenAsync(externalLocation.Id);
+
+            // Get the associated account
+            var account = await _accountRepository.GetByIdAsync(externalLocation.AccountId);
+            if (account == null)
+            {
+                _logger.LogError("External location {ExternalLocationId} references non-existent account {AccountId}",
+                    externalLocation.Id, externalLocation.AccountId);
+                return NotFound(new { error = "Associated account not found" });
+            }
+
+            _logger.LogInformation("Terminal identified successfully. Location: {LocationLabel}, Account: {CompanyName}",
+                externalLocation.Label ?? externalLocation.StripeLocationId, account.CompanyName);
+
+            return Ok(new
+            {
+                accountId = account.Id,
+                companyName = account.CompanyName,
+                slug = account.Slug,
+                loyaltySystemType = account.LoyaltySystemType,
+                cashbackRate = account.CashbackRate,
+                historicalRewardDays = account.HistoricalRewardDays,
+                welcomeIncentive = account.WelcomeIncentive,
+                locationLabel = externalLocation.Label,
+                platformName = externalLocation.PlatformName,
+                stripeLocationId = externalLocation.StripeLocationId,
+                branding = new
+                {
+                    logoUrl = account.BrandingLogoUrl,
+                    backgroundColor = account.BrandingBackgroundColor,
+                    textColor = account.BrandingTextColor,
+                    buttonColor = account.BrandingButtonColor,
+                    buttonTextColor = account.BrandingButtonTextColor,
+                    headlineText = account.BrandingHeadlineText,
+                    subheadlineText = account.BrandingSubheadlineText,
+                    qrHeadlineText = account.BrandingQrHeadlineText,
+                    qrSubheadlineText = account.BrandingQrSubheadlineText,
+                    qrButtonText = account.BrandingQrButtonText,
+                    recognizedHeadlineText = account.BrandingRecognizedHeadlineText,
+                    recognizedSubheadlineText = account.BrandingRecognizedSubheadlineText,
+                    recognizedButtonText = account.BrandingRecognizedButtonText,
+                    recognizedLinkText = account.BrandingRecognizedLinkText
+                },
+                signupUrl = $"/signup/{account.Slug}"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error identifying terminal by location");
+            return StatusCode(500, new { error = "Failed to identify terminal" });
+        }
+    }
+}
+
+public class IdentifyByLocationRequest
+{
+    public string? StripeLocationId { get; set; }
+    public string? PairingCode { get; set; }
 }

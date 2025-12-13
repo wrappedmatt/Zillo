@@ -16,6 +16,10 @@ object SecureStorage {
     private const val KEY_TERMINAL_ID = "terminal_id"
     private const val KEY_ACCOUNT_ID = "account_id"
     private const val KEY_TERMINAL_LABEL = "terminal_label"
+    private const val KEY_EXTERNAL_MODE = "external_mode"
+    private const val KEY_STRIPE_LOCATION_ID = "stripe_location_id"
+    private const val KEY_COMPANY_NAME = "company_name"
+    private const val KEY_SLUG = "slug"
 
     private var securePrefs: SharedPreferences? = null
 
@@ -85,10 +89,10 @@ object SecureStorage {
     }
 
     /**
-     * Check if terminal is paired (has an API key)
+     * Check if terminal is paired (has an API key) or identified (external mode)
      */
     fun isTerminalPaired(): Boolean {
-        return !getTerminalApiKey().isNullOrEmpty()
+        return !getTerminalApiKey().isNullOrEmpty() || isExternalMode()
     }
 
     /**
@@ -96,5 +100,62 @@ object SecureStorage {
      */
     fun clearTerminalInfo() {
         securePrefs?.edit()?.clear()?.apply()
+    }
+
+    // ==================== External Mode Support ====================
+
+    /**
+     * Save external mode identification info
+     * Used when terminal identifies via Stripe Location ID instead of pairing
+     */
+    fun saveExternalModeInfo(
+        stripeLocationId: String,
+        accountId: String,
+        companyName: String,
+        slug: String
+    ) {
+        securePrefs?.edit()?.apply {
+            putBoolean(KEY_EXTERNAL_MODE, true)
+            putString(KEY_STRIPE_LOCATION_ID, stripeLocationId)
+            putString(KEY_ACCOUNT_ID, accountId)
+            putString(KEY_COMPANY_NAME, companyName)
+            putString(KEY_SLUG, slug)
+            apply()
+        }
+    }
+
+    /**
+     * Check if terminal is running in external mode (partner-deployed)
+     */
+    fun isExternalMode(): Boolean {
+        return securePrefs?.getBoolean(KEY_EXTERNAL_MODE, false) ?: false
+    }
+
+    /**
+     * Get the Stripe Location ID (external mode only)
+     */
+    fun getStripeLocationId(): String? {
+        return securePrefs?.getString(KEY_STRIPE_LOCATION_ID, null)
+    }
+
+    /**
+     * Get the company name
+     */
+    fun getCompanyName(): String? {
+        return securePrefs?.getString(KEY_COMPANY_NAME, null)
+    }
+
+    /**
+     * Get the account slug
+     */
+    fun getSlug(): String? {
+        return securePrefs?.getString(KEY_SLUG, null)
+    }
+
+    /**
+     * Check if terminal is configured (either paired or identified)
+     */
+    fun isTerminalConfigured(): Boolean {
+        return isTerminalPaired() || isExternalMode()
     }
 }
