@@ -40,8 +40,9 @@ public class StripeConnectController : ControllerBase
     /// <summary>
     /// Get Stripe Connect status for the current account
     /// </summary>
+    /// <param name="refresh">If true, fetches fresh status from Stripe API</param>
     [HttpGet("status")]
-    public async Task<IActionResult> GetStatus()
+    public async Task<IActionResult> GetStatus([FromQuery] bool refresh = false)
     {
         try
         {
@@ -49,12 +50,34 @@ public class StripeConnectController : ControllerBase
             if (accountId == null)
                 return Unauthorized();
 
-            var status = await _stripeConnectService.GetAccountStatusAsync(accountId.Value);
+            var status = await _stripeConnectService.GetAccountStatusAsync(accountId.Value, refresh);
             return Ok(status);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting Stripe Connect status");
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Refresh Stripe Connect status from Stripe API
+    /// </summary>
+    [HttpPost("refresh-status")]
+    public async Task<IActionResult> RefreshStatus()
+    {
+        try
+        {
+            var accountId = await GetAccountIdFromToken();
+            if (accountId == null)
+                return Unauthorized();
+
+            var status = await _stripeConnectService.GetAccountStatusAsync(accountId.Value, refreshFromStripe: true);
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error refreshing Stripe Connect status");
             return BadRequest(new { error = ex.Message });
         }
     }

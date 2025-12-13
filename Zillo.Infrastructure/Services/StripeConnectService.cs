@@ -135,12 +135,58 @@ public class StripeConnectService : IStripeConnectService
         return loginLink.Url;
     }
 
-    public async Task<StripeAccountStatusDto> GetAccountStatusAsync(Guid accountId)
+    public async Task<StripeAccountStatusDto> GetAccountStatusAsync(Guid accountId, bool refreshFromStripe = false)
     {
         var account = await _accountRepository.GetByIdAsync(accountId);
         if (account == null)
         {
             throw new InvalidOperationException($"Account not found: {accountId}");
+        }
+
+        // If we have a Stripe account and refresh is requested, fetch fresh status from Stripe
+        if (refreshFromStripe && !string.IsNullOrEmpty(account.StripeAccountId))
+        {
+            try
+            {
+                _logger.LogInformation("Fetching fresh status from Stripe for account {AccountId}", accountId);
+
+                var service = new AccountService();
+                var stripeAccount = await service.GetAsync(account.StripeAccountId);
+
+                var chargesEnabled = stripeAccount.ChargesEnabled;
+                var payoutsEnabled = stripeAccount.PayoutsEnabled;
+
+                // Update our database with the fresh status
+                account.StripeChargesEnabled = chargesEnabled;
+                account.StripePayoutsEnabled = payoutsEnabled;
+                account.StripeAccountUpdatedAt = DateTime.UtcNow;
+
+                // Update onboarding status based on capabilities
+                if (chargesEnabled && payoutsEnabled)
+                {
+                    account.StripeOnboardingStatus = "complete";
+                }
+                else if (chargesEnabled || payoutsEnabled)
+                {
+                    account.StripeOnboardingStatus = "restricted";
+                }
+                else if (stripeAccount.DetailsSubmitted)
+                {
+                    account.StripeOnboardingStatus = "pending_verification";
+                }
+                // else keep existing status (pending)
+
+                await _accountRepository.UpdateAsync(account);
+
+                _logger.LogInformation(
+                    "Updated account {AccountId} from Stripe: charges={ChargesEnabled}, payouts={PayoutsEnabled}, status={Status}",
+                    accountId, chargesEnabled, payoutsEnabled, account.StripeOnboardingStatus);
+            }
+            catch (StripeException ex)
+            {
+                _logger.LogWarning(ex, "Failed to fetch status from Stripe for account {AccountId}", accountId);
+                // Continue with cached data
+            }
         }
 
         return new StripeAccountStatusDto(

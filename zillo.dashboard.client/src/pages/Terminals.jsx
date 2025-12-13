@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -25,7 +25,7 @@ import { Plus, Smartphone, Copy, Check, XCircle, Trash2, CreditCard, ExternalLin
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function Terminals() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [terminals, setTerminals] = useState([])
   const [account, setAccount] = useState(null)
@@ -36,19 +36,57 @@ export default function Terminals() {
   const [copiedCode, setCopiedCode] = useState(false)
   const [stripeLoading, setStripeLoading] = useState(false)
   const [error, setError] = useState('')
+  const hasRefreshedStripe = useRef(false)
 
   useEffect(() => {
     document.title = 'Terminals | Zillo'
   }, [])
 
   useEffect(() => {
+    // Wait for auth to be determined before redirecting
+    if (authLoading) return
+
     if (!user) {
       navigate('/signin')
       return
     }
     loadAccount()
     loadTerminals()
-  }, [user, navigate])
+  }, [user, authLoading, navigate])
+
+  // Refresh Stripe status when returning from Stripe onboarding
+  useEffect(() => {
+    const refreshStripeStatus = async () => {
+      // Only refresh once per page load if we have a stripeAccountId
+      if (hasRefreshedStripe.current) return
+      if (authLoading || !user) return
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
+
+        // Refresh status from Stripe API
+        const response = await fetch('/api/stripe-connect/status?refresh=true', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        })
+
+        if (response.ok) {
+          // Reload account to get updated status
+          await loadAccount()
+        }
+        hasRefreshedStripe.current = true
+      } catch (error) {
+        console.error('Error refreshing Stripe status:', error)
+      }
+    }
+
+    // If returning from Stripe (account already has stripeAccountId but status might be stale)
+    if (account?.stripeAccountId && !account?.stripeChargesEnabled) {
+      refreshStripeStatus()
+    }
+  }, [account?.stripeAccountId, account?.stripeChargesEnabled, authLoading, user])
 
   const loadAccount = async () => {
     try {
@@ -395,10 +433,10 @@ export default function Terminals() {
     return new Date(dateString).toLocaleString()
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-lg text-foreground">Loading...</div>
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }

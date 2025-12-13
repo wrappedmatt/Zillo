@@ -37,8 +37,9 @@ public interface IStripeConnectService
     /// Get the current Stripe Connect status for an account
     /// </summary>
     /// <param name="accountId">The Zillo account ID</param>
+    /// <param name="refreshFromStripe">If true, fetches fresh status from Stripe API and updates the database</param>
     /// <returns>Current status</returns>
-    Task<StripeAccountStatusDto> GetAccountStatusAsync(Guid accountId);
+    Task<StripeAccountStatusDto> GetAccountStatusAsync(Guid accountId, bool refreshFromStripe = false);
 
     /// <summary>
     /// Update account status from Stripe webhook (account.updated event)
