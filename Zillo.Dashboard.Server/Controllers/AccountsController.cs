@@ -117,6 +117,11 @@ public class AccountsController : ControllerBase
                 walletPassStripUrl = account.WalletPassStripUrl,
                 walletPassLabelColor = account.WalletPassLabelColor,
                 walletPassForegroundColor = account.WalletPassForegroundColor,
+                // Stripe Connect status
+                stripeAccountId = account.StripeAccountId,
+                stripeOnboardingStatus = account.StripeOnboardingStatus,
+                stripeChargesEnabled = account.StripeChargesEnabled,
+                stripePayoutsEnabled = account.StripePayoutsEnabled,
                 createdAt = account.CreatedAt
             });
         }
@@ -211,6 +216,11 @@ public class AccountsController : ControllerBase
                 walletPassStripUrl = updatedAccount.WalletPassStripUrl,
                 walletPassLabelColor = updatedAccount.WalletPassLabelColor,
                 walletPassForegroundColor = updatedAccount.WalletPassForegroundColor,
+                // Stripe Connect status
+                stripeAccountId = updatedAccount.StripeAccountId,
+                stripeOnboardingStatus = updatedAccount.StripeOnboardingStatus,
+                stripeChargesEnabled = updatedAccount.StripeChargesEnabled,
+                stripePayoutsEnabled = updatedAccount.StripePayoutsEnabled,
                 createdAt = updatedAccount.CreatedAt
             });
         }
